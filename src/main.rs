@@ -9,7 +9,9 @@ mod parser;
 extern crate lazy_static;
 
 fn main() {
-    let program = "-(1 + 2) / -2 + 1 * 2";
+    let program = "
+    -(1 + 2) / -2 + 1 * 2 + [2 + 3, 2]
+    ";
     let ast = AlphaParser::parse_source(program);
     let result = Eval::eval(&ast);
     println!("Result: {:?}", result);

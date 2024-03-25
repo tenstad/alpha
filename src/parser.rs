@@ -44,8 +44,15 @@ impl AlphaParser {
 
     fn parse_expr(pairs: Pairs<Rule>) -> Result<ast::Node, String> {
         PRATT_PARSER
-        .map_primary(|primary| match primary.as_rule() {
+            .map_primary(|primary| match primary.as_rule() {
                 Rule::program | Rule::expr => Self::parse_expr(primary.into_inner()),
+                Rule::list => {
+                    let list = primary
+                        .into_inner()
+                        .map(|i| Self::parse_expr(i.into_inner()))
+                        .collect::<Result<Vec<ast::Node>, String>>()?;
+                    Ok(ast::Node::List(list))
+                }
                 Rule::int => primary
                     .as_str()
                     .parse::<u64>()

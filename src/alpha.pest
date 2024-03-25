@@ -12,5 +12,6 @@ program      =   { SOI ~ expr ~ EOI }
       neg    =   { "-" }
     postfix  =  _{ fac }
       fac    =   { "!" }
-    primary  =  _{ int | "(" ~ expr ~ ")" }
+    primary  =  _{ "(" ~ expr ~ ")" | list | int }
+      list   =  { "[" ~ expr ~ ("," ~ expr )* ~ "]" }
       int    =  @{ (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT+ | ASCII_DIGIT) }
