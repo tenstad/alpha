@@ -3,6 +3,13 @@ use crate::ast;
 pub struct Eval;
 
 impl Eval {
+    pub fn run(nodes: &Vec<ast::Node>) {
+        for node in nodes {
+            let result = Self::eval(node);
+            println!("Result: {:?}", result);
+        }
+    }
+
     pub fn eval(node: &ast::Node) -> f64 {
         match node {
             ast::Node::Int(n) => *n as f64,

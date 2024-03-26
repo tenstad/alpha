@@ -21,22 +21,21 @@ lazy_static! {
 pub struct AlphaParser;
 
 impl AlphaParser {
-    pub fn parse_source(source: &str) -> ast::Node {
+    pub fn parse_source(source: &str) -> Result<Vec<ast::Node>, String> {
         println!("Compiling the source: \"{}\"", source);
 
-        let mut pairs = AlphaParser::parse(Rule::program, source).unwrap();
+        let mut pairs = AlphaParser::parse(Rule::program, source).map_err(|e| e.to_string())?;
         println!("Pairs: {:?}", pairs);
 
-        let ast = Self::parse_expr(
-            pairs
-                .next()
-                .unwrap()
-                .into_inner()
-                .next()
-                .unwrap()
-                .into_inner(),
-        )
-        .unwrap();
+        let ast = pairs
+            .next()
+            .unwrap()
+            .into_inner()
+            .next()
+            .unwrap()
+            .into_inner()
+            .map(|pair| Self::parse_expr(pair.into_inner()))
+            .collect::<Result<Vec<ast::Node>, String>>();
         println!("Parsed: {:?}", ast);
 
         ast
