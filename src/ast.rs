@@ -7,6 +7,8 @@ pub enum Node {
         lhs: Box<Node>,
         rhs: Box<Node>,
     },
+    Var(String, Box<Node>),
+    VarRef(String),
 }
 
 #[derive(Debug)]

@@ -13,6 +13,8 @@ lazy_static! {
             .op(Op::infix(Rule::pow, Assoc::Right))
             .op(Op::postfix(Rule::fac))
             .op(Op::prefix(Rule::neg))
+            .op(Op::prefix(Rule::name))
+            .op(Op::prefix(Rule::def))
     };
 }
 
@@ -57,7 +59,15 @@ impl AlphaParser {
                     .parse::<u64>()
                     .map_err(|err| err.to_string())
                     .map(ast::Node::Int),
-                _ => unreachable!(),
+                Rule::name => Ok(ast::Node::Var(
+                    primary.as_str().to_string(),
+                    Box::new(ast::Node::Int(0)),
+                )),
+                Rule::varref => Ok(ast::Node::VarRef(primary.as_str().to_string())),
+                _ => {
+                    dbg!(primary);
+                    unreachable!()
+                }
             })
             .map_prefix(|op, rhs| match op.as_rule() {
                 Rule::neg => Ok(ast::Node::Expr {
@@ -65,11 +75,19 @@ impl AlphaParser {
                     lhs: Box::new(ast::Node::Int(0)),
                     rhs: Box::new(rhs?),
                 }),
-                _ => unreachable!(),
+                Rule::name => Ok(ast::Node::Var(op.as_str().to_string(), Box::new(rhs?))),
+                Rule::def => Ok(rhs?),
+                _ => {
+                    dbg!(op, rhs?);
+                    unreachable!()
+                }
             })
-            .map_postfix(|_lhs, op| match op.as_rule() {
+            .map_postfix(|lhs, op| match op.as_rule() {
                 Rule::fac => todo!(),
-                _ => unreachable!(),
+                _ => {
+                    dbg!(lhs?, op);
+                    unreachable!()
+                }
             })
             .map_infix(|lhs, op, rhs| {
                 Ok(ast::Node::Expr {
