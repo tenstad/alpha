@@ -19,7 +19,12 @@ impl Eval {
 
     pub fn eval(&mut self, node: &ast::Node) -> f64 {
         match node {
-            ast::Node::Var(name, expr) => {
+            ast::Node::Define(_mutable, name, expr) => {
+                let val = self.eval(expr);
+                self.vars.insert(name.clone(), val);
+                0.0
+            }
+            ast::Node::Assign(name, expr) => {
                 let val = self.eval(expr);
                 self.vars.insert(name.clone(), val);
                 0.0

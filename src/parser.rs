@@ -66,7 +66,7 @@ impl AlphaParser {
                     .parse::<u64>()
                     .map_err(|err| err.to_string())
                     .map(ast::Node::Int),
-                Rule::name => Ok(ast::Node::Var(
+                Rule::name => Ok(ast::Node::Assign(
                     primary.as_str().to_string(),
                     Box::new(ast::Node::Int(0)),
                 )),
@@ -82,8 +82,20 @@ impl AlphaParser {
                     lhs: Box::new(ast::Node::Int(0)),
                     rhs: Box::new(rhs?),
                 }),
-                Rule::name => Ok(ast::Node::Var(op.as_str().to_string(), Box::new(rhs?))),
-                Rule::def => Ok(rhs?),
+                Rule::name => Ok(ast::Node::Assign(op.as_str().to_string(), Box::new(rhs?))),
+                Rule::def => match rhs {
+                    Ok(ast::Node::Assign(name, expr)) => Ok(ast::Node::Define(
+                        if op.as_str().contains("mut") {
+                            ast::Mut::Mutable
+                        } else {
+                            ast::Mut::Immutable
+                        },
+                        name,
+                        expr,
+                    )),
+                    Err(e) => Err(e),
+                    _ => unreachable!(),
+                },
                 _ => {
                     dbg!(op, rhs?);
                     unreachable!()

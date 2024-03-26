@@ -7,7 +7,8 @@ pub enum Node {
         lhs: Box<Node>,
         rhs: Box<Node>,
     },
-    Var(String, Box<Node>),
+    Define(Mut, String, Box<Node>),
+    Assign(String, Box<Node>),
     VarRef(String),
 }
 
@@ -17,4 +18,10 @@ pub enum Op {
     Sub,
     Mul,
     Div,
+}
+
+#[derive(Debug)]
+pub enum Mut {
+    Mutable,
+    Immutable
 }
