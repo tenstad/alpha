@@ -9,10 +9,12 @@ pub struct Eval {
 
 impl Eval {
     pub fn run(&mut self, nodes: &Vec<ast::Node>) {
+        println!("----- Evaled -----");
         for node in nodes {
             let result = self.eval(node);
-            println!("Result: {:?}", result);
+            println!("{:?} - {:?}", result, node);
         }
+        println!("------------------");
     }
 
     pub fn eval(&mut self, node: &ast::Node) -> f64 {
