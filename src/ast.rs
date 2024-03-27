@@ -2,6 +2,12 @@
 pub enum Node {
     Nada,
     Number(f64),
+    Range(f64, f64),
+    Loop {
+        var: String,
+        range: Box<Node>,
+        inner: Vec<Node>,
+    },
     List(Vec<Node>),
     Expr {
         op: Op,

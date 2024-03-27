@@ -1,10 +1,12 @@
 WHITESPACE   =  _{ " " | "\t" | NEWLINE }
   
 program           =   { SOI ~ statements ~ EOI }
-  statements      =   { (statement ~ ";")* }
-    statement     =  _{ var | expr }
+  statements      =   { (statement | semistatement)* }
+    statement     =   { looop }
+      looop       =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
+    semistatement =  _{ (var | expr) ~ ";" }
       var         =   { def? ~ name ~ "=" ~ expr }
-        def       =  { "let" ~ "mut"? }
+        def       =   { "let" ~ "mut"? }
         name      =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }
       expr        =   { prefix? ~ primary ~ postfix? ~ (infix ~ prefix? ~ primary ~ postfix? )* }
         infix     =  _{ add | sub | mul | div | pow }
@@ -17,7 +19,8 @@ program           =   { SOI ~ statements ~ EOI }
           neg     =   { "-" }
         postfix   =  _{ fac }
           fac     =   { "!" }
-        primary   =  _{ "(" ~ expr ~ ")" | varref | list | int }
+        primary   =  _{ "(" ~ expr ~ ")" | varref | list | range | int }
           list    =   { "[" ~ expr ~ ("," ~ expr )* ~ "]" }
+          range   =   { int ~ ".." ~ int }
           int     =  @{ (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT+ | ASCII_DIGIT) }
           varref  =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }

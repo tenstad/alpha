@@ -66,7 +66,37 @@ impl AlphaParser {
                     .parse::<f64>()
                     .map_err(|err| err.to_string())
                     .map(ast::Node::Number),
+                Rule::range => {
+                    let mut inner = primary.into_inner();
+                    let from = inner
+                        .next()
+                        .unwrap()
+                        .as_str()
+                        .parse::<f64>()
+                        .map_err(|err| err.to_string())?;
+                    let to = inner
+                        .next()
+                        .unwrap()
+                        .as_str()
+                        .parse::<f64>()
+                        .map_err(|err| err.to_string())?;
+                    Ok(ast::Node::Range(from, to))
+                }
                 Rule::varref => Ok(ast::Node::VarRef(primary.as_str().to_string())),
+                Rule::looop => {
+                    let mut inner = primary.into_inner();
+                    let name = inner.next().unwrap().as_str().to_string();
+                    let range = Self::parse_expr(inner.next().unwrap().into_inner())?;
+                    let inner = inner
+                        .into_iter()
+                        .map(|node| Self::parse_expr(node.into_inner()))
+                        .collect::<Result<Vec<ast::Node>, String>>()?;
+                    Ok(ast::Node::Loop {
+                        var: name,
+                        range: Box::new(range),
+                        inner,
+                    })
+                }
                 _ => {
                     dbg!(primary);
                     unreachable!()
