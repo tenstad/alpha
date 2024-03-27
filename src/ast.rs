@@ -1,6 +1,7 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Node {
-    Int(u64),
+    Nada,
+    Number(f64),
     List(Vec<Node>),
     Expr {
         op: Op,
@@ -12,7 +13,7 @@ pub enum Node {
     VarRef(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Op {
     Add,
     Sub,
@@ -20,8 +21,8 @@ pub enum Op {
     Div,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Mut {
     Mutable,
-    Immutable
+    Immutable,
 }

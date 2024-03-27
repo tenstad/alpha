@@ -63,13 +63,9 @@ impl AlphaParser {
                 }
                 Rule::int => primary
                     .as_str()
-                    .parse::<u64>()
+                    .parse::<f64>()
                     .map_err(|err| err.to_string())
-                    .map(ast::Node::Int),
-                Rule::name => Ok(ast::Node::Assign(
-                    primary.as_str().to_string(),
-                    Box::new(ast::Node::Int(0)),
-                )),
+                    .map(ast::Node::Number),
                 Rule::varref => Ok(ast::Node::VarRef(primary.as_str().to_string())),
                 _ => {
                     dbg!(primary);
@@ -78,8 +74,8 @@ impl AlphaParser {
             })
             .map_prefix(|op, rhs| match op.as_rule() {
                 Rule::neg => Ok(ast::Node::Expr {
-                    op: ast::Op::Sub,
-                    lhs: Box::new(ast::Node::Int(0)),
+                    op: ast::Op::Mul,
+                    lhs: Box::new(ast::Node::Number(-1.0)),
                     rhs: Box::new(rhs?),
                 }),
                 Rule::name => Ok(ast::Node::Assign(op.as_str().to_string(), Box::new(rhs?))),
