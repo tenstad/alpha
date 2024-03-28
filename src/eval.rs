@@ -9,7 +9,7 @@ pub struct Eval {
 
 impl Eval {
     pub fn run(&mut self, nodes: &Vec<ast::Node>, depth: usize) {
-        let pad = (0..depth).map(|_| " ").collect::<String>();
+        let pad = " ".repeat(2*depth);
         println!("{}----- Evaled -----", pad);
         for node in nodes {
             let result = self.eval(node, depth);
@@ -45,7 +45,7 @@ impl Eval {
                 ast::Node::Range(from, to) => {
                     for i in *from as i64..*to as i64 {
                         self.vars.insert(var.clone(), ast::Node::Number(i as f64));
-                        self.run(inner, depth + 4);
+                        self.run(inner, depth + 1);
                     }
                     ast::Node::Nada
                 }

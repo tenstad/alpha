@@ -23,11 +23,27 @@ lazy_static! {
 pub struct AlphaParser;
 
 impl AlphaParser {
+    fn print_pairs(pairs: &Pairs<'_, Rule>, depth: usize) {
+        for p in pairs.clone().into_iter() {
+            println!(
+                "{: >3} {: >3} {} {: <12} {:?}",
+                p.as_span().start(),
+                p.as_span().end(),
+                " ".repeat(2 * depth),
+                format!("{:?}", p.as_rule()),
+                p.as_str()
+            );
+            AlphaParser::print_pairs(&p.into_inner(), depth + 1);
+        }
+    }
+
     pub fn parse_source(source: &str) -> Result<Vec<ast::Node>, String> {
         println!("----- Source -----\n{}\n------------------", source);
 
         let mut pairs = AlphaParser::parse(Rule::program, source).map_err(|e| e.to_string())?;
-        println!("----- Pairs ------\n{:?}\n------------------", pairs);
+        println!("----- Pairs ------");
+        AlphaParser::print_pairs(&pairs, 0);
+        println!("------------------");
 
         let ast = pairs
             .next()
