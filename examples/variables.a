@@ -3,6 +3,4 @@ let mut bar = 2;
 let baz = bar;
 bar = 3;
 
-print(foo);
-print(bar);
-print(baz);
+print(foo, bar, baz);

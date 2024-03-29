@@ -5,7 +5,7 @@ program           =   { SOI ~ statements ~ EOI }
     statement     =   { looop }
       looop       =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
     semistatement =  _{ (var | fun | expr) ~ ";" }
-      fun         =   { name ~ "(" ~ expr ~ ")" }
+      fun         =   { name ~ "(" ~ expr ~ ("," ~ expr)* ~ ")" }
       var         =   { def? ~ name ~ "=" ~ expr }
         def       =   { "let" ~ "mut"? }
         name      =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }

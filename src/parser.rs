@@ -134,8 +134,11 @@ impl AlphaParser {
             Rule::fun => {
                 let mut inner = pair.into_inner();
                 let name = inner.next().unwrap().as_str().to_string();
-                let args = Self::parse_pair(inner.next().unwrap())?;
-                Ok(ast::Node::Fun(name, Box::new(args)))
+                let args = inner
+                    .into_iter()
+                    .map(Self::parse_pair)
+                    .collect::<Result<Vec<ast::Node>, String>>()?;
+                Ok(ast::Node::Fun(name, args))
             }
             _ => {
                 dbg!(pair);

@@ -109,7 +109,13 @@ impl Eval {
             }
             ast::Node::Fun(name, args) => {
                 if name == "print" {
-                    println!("{:?}", self.eval(args, depth));
+                    println!(
+                        "{}",
+                        args.iter()
+                            .map(|arg| format!("{:?}", self.eval(arg, depth)))
+                            .collect::<Vec<String>>()
+                            .join(" ")
+                    );
                 }
                 ast::Node::Nada
             }

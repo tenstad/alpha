@@ -9,7 +9,7 @@ pub enum Node {
         inner: Vec<Node>,
     },
     Statements(Vec<Node>),
-    Fun(String, Box<Node>),
+    Fun(String, Vec<Node>),
     List(Vec<Node>),
     Expr {
         op: Op,
