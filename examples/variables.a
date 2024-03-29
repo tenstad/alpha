@@ -3,6 +3,6 @@ let mut bar = 2;
 let baz = bar;
 bar = 3;
 
-foo;
-bar;
-baz;
+print(foo);
+print(bar);
+print(baz);

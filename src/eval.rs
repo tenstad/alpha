@@ -9,20 +9,20 @@ pub struct Eval {
 
 impl Eval {
     pub fn run(&mut self, node: &ast::Node, depth: usize) {
-        let pad = " ".repeat(2*depth);
-        println!("{}----- Evaled -----", pad);
-        let result = self.eval(node, depth);
-        println!("{}{:?} - {:?}", pad, result, node);
-        println!("{}------------------", pad);
+        // let pad = " ".repeat(2*depth);
+        // println!("{}----- Evaled -----", pad);
+        let _result = self.eval(node, depth);
+        // println!("{}{:?} - {:?}", pad, result, node);
+        // println!("{}------------------", pad);
     }
 
     fn eval(&mut self, node: &ast::Node, depth: usize) -> ast::Node {
         match node {
             ast::Node::Statements(nodes) => {
                 for node in nodes {
-                    let pad = " ".repeat(2*depth);
-                    let result = self.eval(node, depth);
-                    println!("{}{:?} - {:?}", pad, result, node);
+                    // let pad = " ".repeat(2*depth);
+                    let _result = self.eval(node, depth);
+                    // println!("{}{:?} - {:?}", pad, result, node);
                 }
                 ast::Node::Nada
             }
@@ -43,11 +43,14 @@ impl Eval {
                     .collect::<Vec<ast::Node>>(),
             ),
             ast::Node::Loop { var, range, inner } => match range.borrow() {
-                ast::Node::VarRef(name) => self.eval(&ast::Node::Loop {
-                    var: var.clone(),
-                    range: Box::new(self.vars.get(name).unwrap().clone()),
-                    inner: inner.clone(),
-                }, depth),
+                ast::Node::VarRef(name) => self.eval(
+                    &ast::Node::Loop {
+                        var: var.clone(),
+                        range: Box::new(self.vars.get(name).unwrap().clone()),
+                        inner: inner.clone(),
+                    },
+                    depth,
+                ),
                 ast::Node::Range(from, to) => {
                     for i in *from as i64..*to as i64 {
                         self.vars.insert(var.clone(), ast::Node::Number(i as f64));
@@ -75,11 +78,14 @@ impl Eval {
                         b.iter()
                             .map(|x| match x {
                                 ast::Node::Number(n) => ast::Node::Number(a * n),
-                                _ => self.eval(&ast::Node::Expr {
-                                    op: ast::Op::Mul,
-                                    lhs: Box::new(ast::Node::Number(a)),
-                                    rhs: Box::new(x.clone()),
-                                }, depth),
+                                _ => self.eval(
+                                    &ast::Node::Expr {
+                                        op: ast::Op::Mul,
+                                        lhs: Box::new(ast::Node::Number(a)),
+                                        rhs: Box::new(x.clone()),
+                                    },
+                                    depth,
+                                ),
                             })
                             .collect(),
                     ),
@@ -87,18 +93,31 @@ impl Eval {
                         a.iter()
                             .map(|x| match x {
                                 ast::Node::Number(n) => ast::Node::Number(n / b),
-                                _ => self.eval(&ast::Node::Expr {
-                                    op: ast::Op::Div,
-                                    lhs: Box::new(x.clone()),
-                                    rhs: Box::new(ast::Node::Number(b)),
-                                }, depth),
+                                _ => self.eval(
+                                    &ast::Node::Expr {
+                                        op: ast::Op::Div,
+                                        lhs: Box::new(x.clone()),
+                                        rhs: Box::new(ast::Node::Number(b)),
+                                    },
+                                    depth,
+                                ),
                             })
                             .collect(),
                     ),
                     _ => panic!(),
                 }
             }
-            ast::Node::VarRef(name) => self.vars.get(name).expect(format!("Variable '{}' not known", name).as_str()).clone(),
+            ast::Node::Fun(name, args) => {
+                if name == "print" {
+                    println!("{:?}", self.eval(args, depth));
+                }
+                ast::Node::Nada
+            }
+            ast::Node::VarRef(name) => self
+                .vars
+                .get(name)
+                .expect(format!("Variable '{}' not known", name).as_str())
+                .clone(),
             ast::Node::Range(a, b) => ast::Node::Range(*a, *b),
             ast::Node::Nada => ast::Node::Nada,
         }

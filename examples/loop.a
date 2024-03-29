@@ -2,7 +2,7 @@ let range = 0..10;
 let mut fib = 0;
 let mut next = 1;
 for i in range {
-    fib;
+    print(fib);
     let prev = fib;
     fib = next;
     next = prev + fib;
