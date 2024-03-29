@@ -36,6 +36,7 @@ impl Eval {
                 self.vars.insert(name.clone(), val);
                 ast::Node::Nada
             }
+            ast::Node::Bool(b) => ast::Node::Bool(*b),
             ast::Node::Number(n) => ast::Node::Number(*n),
             ast::Node::List(list) => ast::Node::List(
                 list.iter()
@@ -60,6 +61,13 @@ impl Eval {
                 }
                 _ => panic!(),
             },
+            ast::Node::IfElse(cond, iif, eelse) => {
+                match self.eval(cond, depth) {
+                    ast::Node::Bool(true) =>  self.eval(&iif, depth),
+                    ast::Node::Bool(false) =>  self.eval(&eelse, depth),
+                    _ => panic!("not a bool")
+                }
+            }
             ast::Node::Expr { op, lhs, rhs } => {
                 let lhs = self.eval(lhs, depth);
                 let rhs = self.eval(rhs, depth);
@@ -70,6 +78,12 @@ impl Eval {
                         ast::Op::Sub => ast::Node::Number(a - b),
                         ast::Op::Mul => ast::Node::Number(a * b),
                         ast::Op::Div => ast::Node::Number(a / b),
+                        ast::Op::Eq => ast::Node::Bool(a == b),
+                        ast::Op::Neq => ast::Node::Bool(a != b),
+                        ast::Op::Gt => ast::Node::Bool(a > b),
+                        ast::Op::Ge => ast::Node::Bool(a >= b),
+                        ast::Op::Lt => ast::Node::Bool(a < b),
+                        ast::Op::Le => ast::Node::Bool(a <= b),
                     },
                     (ast::Op::Add, ast::Node::List(a), ast::Node::List(b)) => {
                         ast::Node::List(a.iter().chain(b.iter()).cloned().collect())

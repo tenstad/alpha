@@ -2,12 +2,14 @@
 pub enum Node {
     Nada,
     Number(f64),
+    Bool(bool),
     Range(f64, f64),
     Loop {
         var: String,
         range: Box<Node>,
         inner: Vec<Node>,
     },
+    IfElse(Box<Node>, Box<Node>, Box<Node>),
     Statements(Vec<Node>),
     Fun(String, Vec<Node>),
     List(Vec<Node>),
@@ -27,6 +29,12 @@ pub enum Op {
     Sub,
     Mul,
     Div,
+    Eq,
+    Neq,
+    Gt,
+    Ge,
+    Lt,
+    Le,
 }
 
 #[derive(Debug, Clone)]

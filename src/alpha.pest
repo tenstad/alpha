@@ -2,15 +2,23 @@ WHITESPACE   =  _{ " " | "\t" | NEWLINE }
   
 program           =   { SOI ~ statements ~ EOI }
   statements      =   { (statement | semistatement)* }
-    statement     =   { looop }
+    statement     =   { looop | iif }
       looop       =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
+      iif         =   { "if" ~ expr ~ "{" ~ statements ~ "}" ~ eelse? }
+      eelse       =   { "else" ~ "{" ~ statements ~ "}" }
     semistatement =  _{ (var | fun | expr) ~ ";" }
       fun         =   { name ~ "(" ~ expr ~ ("," ~ expr)* ~ ")" }
       var         =   { def? ~ name ~ "=" ~ expr }
         def       =   { "let" ~ "mut"? }
         name      =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }
       expr        =   { prefix? ~ primary ~ postfix? ~ (infix ~ prefix? ~ primary ~ postfix? )* }
-        infix     =  _{ add | sub | mul | div | pow }
+        infix     =  _{ ge | gt | le | lt | eq | neq | add | sub | mul | div | pow }
+          eq      =   { "==" }
+          neq     =   { "!=" }
+          gt      =   { ">" }
+          ge      =   { ">=" }
+          lt      =   { "<" }
+          le      =   { "<=" }
           add     =   { "+" }
           sub     =   { "-" }
           mul     =   { "*" }
@@ -19,7 +27,7 @@ program           =   { SOI ~ statements ~ EOI }
         prefix    =  _{ neg }
           neg     =   { "-" }
         postfix   =  _{ fac }
-          fac     =   { "!" }
+          fac     =   { "$" }
         primary   =  _{ "(" ~ expr ~ ")" | varref | list | range | int }
           list    =   { "[" ~ expr ~ ("," ~ expr )* ~ "]" }
           range   =   { int ~ ".." ~ int }

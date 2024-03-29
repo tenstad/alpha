@@ -18,6 +18,11 @@ lazy_static! {
             .op(Op::infix(Rule::pow, Assoc::Right))
             .op(Op::postfix(Rule::fac))
             .op(Op::prefix(Rule::neg))
+            .op(Op::infix(Rule::gt, Assoc::Right)
+                | Op::infix(Rule::ge, Assoc::Right)
+                | Op::infix(Rule::lt, Assoc::Right)
+                | Op::infix(Rule::le, Assoc::Right))
+            .op(Op::infix(Rule::eq, Assoc::Right) | Op::infix(Rule::neq, Assoc::Right))
     };
 }
 
@@ -140,6 +145,20 @@ impl AlphaParser {
                     .collect::<Result<Vec<ast::Node>, String>>()?;
                 Ok(ast::Node::Fun(name, args))
             }
+            Rule::iif => {
+                let mut inner = pair.into_inner();
+                let cond = Self::parse_pair(inner.next().unwrap())?;
+                let iif = Self::parse_pair(inner.next().unwrap())?;
+                let eelse = inner
+                    .next()
+                    .map(|pair| Self::parse_pair(pair.into_inner().next().unwrap()))
+                    .unwrap_or(Ok(ast::Node::Nada))?;
+                Ok(ast::Node::IfElse(
+                    Box::new(cond),
+                    Box::new(iif),
+                    Box::new(eelse),
+                ))
+            }
             _ => {
                 dbg!(pair);
                 unreachable!()
@@ -178,6 +197,12 @@ impl AlphaParser {
                         Rule::mul => ast::Op::Mul,
                         Rule::div => ast::Op::Div,
                         Rule::pow => todo!(),
+                        Rule::eq => ast::Op::Eq,
+                        Rule::neq => ast::Op::Neq,
+                        Rule::gt => ast::Op::Gt,
+                        Rule::ge => ast::Op::Ge,
+                        Rule::lt => ast::Op::Lt,
+                        Rule::le => ast::Op::Le,
                         _ => unreachable!(),
                     },
                     lhs: Box::new(lhs?),
