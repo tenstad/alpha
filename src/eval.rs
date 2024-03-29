@@ -8,18 +8,24 @@ pub struct Eval {
 }
 
 impl Eval {
-    pub fn run(&mut self, nodes: &Vec<ast::Node>, depth: usize) {
+    pub fn run(&mut self, node: &ast::Node, depth: usize) {
         let pad = " ".repeat(2*depth);
         println!("{}----- Evaled -----", pad);
-        for node in nodes {
-            let result = self.eval(node, depth);
-            println!("{}{:?} - {:?}", pad, result, node);
-        }
+        let result = self.eval(node, depth);
+        println!("{}{:?} - {:?}", pad, result, node);
         println!("{}------------------", pad);
     }
 
     fn eval(&mut self, node: &ast::Node, depth: usize) -> ast::Node {
         match node {
+            ast::Node::Statements(nodes) => {
+                for node in nodes {
+                    let pad = " ".repeat(2*depth);
+                    let result = self.eval(node, depth);
+                    println!("{}{:?} - {:?}", pad, result, node);
+                }
+                ast::Node::Nada
+            }
             ast::Node::Define(_mutable, name, expr) => {
                 let val = self.eval(expr, depth);
                 self.vars.insert(name.clone(), val);
@@ -45,7 +51,7 @@ impl Eval {
                 ast::Node::Range(from, to) => {
                     for i in *from as i64..*to as i64 {
                         self.vars.insert(var.clone(), ast::Node::Number(i as f64));
-                        self.run(inner, depth + 1);
+                        self.run(&ast::Node::Statements(inner.clone()), depth + 1);
                     }
                     ast::Node::Nada
                 }
@@ -92,7 +98,7 @@ impl Eval {
                     _ => panic!(),
                 }
             }
-            ast::Node::VarRef(name) => self.vars.get(name).unwrap().clone(),
+            ast::Node::VarRef(name) => self.vars.get(name).expect(format!("Variable '{}' not known", name).as_str()).clone(),
             ast::Node::Range(a, b) => ast::Node::Range(*a, *b),
             ast::Node::Nada => ast::Node::Nada,
         }

@@ -8,6 +8,7 @@ pub enum Node {
         range: Box<Node>,
         inner: Vec<Node>,
     },
+    Statements(Vec<Node>),
     List(Vec<Node>),
     Expr {
         op: Op,

@@ -1,6 +1,10 @@
 use crate::ast;
 
-use pest::{iterators::Pairs, pratt_parser::PrattParser, Parser};
+use pest::{
+    iterators::{Pair, Pairs},
+    pratt_parser::PrattParser,
+    Parser,
+};
 use pest_derive::Parser;
 
 lazy_static! {
@@ -8,13 +12,12 @@ lazy_static! {
         use pest::pratt_parser::{Assoc, Op};
 
         PrattParser::new()
+            .op(Op::postfix(Rule::EOI))
             .op(Op::infix(Rule::add, Assoc::Left) | Op::infix(Rule::sub, Assoc::Left))
             .op(Op::infix(Rule::mul, Assoc::Left) | Op::infix(Rule::div, Assoc::Left))
             .op(Op::infix(Rule::pow, Assoc::Right))
             .op(Op::postfix(Rule::fac))
             .op(Op::prefix(Rule::neg))
-            .op(Op::prefix(Rule::name))
-            .op(Op::prefix(Rule::def))
     };
 }
 
@@ -37,87 +40,107 @@ impl AlphaParser {
         }
     }
 
-    pub fn parse_source(source: &str) -> Result<Vec<ast::Node>, String> {
+    pub fn parse_source(source: &str) -> Result<ast::Node, String> {
         println!("----- Source -----\n{}\n------------------", source);
 
-        let mut pairs = AlphaParser::parse(Rule::program, source).map_err(|e| e.to_string())?;
+        let pairs = AlphaParser::parse(Rule::program, source).map_err(|e| e.to_string())?;
         println!("----- Pairs ------");
         AlphaParser::print_pairs(&pairs, 0);
         println!("------------------");
 
-        let ast = pairs
-            .next()
-            .unwrap()
-            .into_inner()
-            .next()
-            .unwrap()
-            .into_inner()
-            .map(|pair| Self::parse_expr(pair.into_inner()))
-            .collect::<Result<Vec<ast::Node>, String>>();
+        let ast = Self::parse_pairs(pairs);
 
         if let Ok(parsed) = &ast {
             println!("----- Parsed -----");
-            for a in parsed.iter() {
-                println!("{:?}", a);
-            }
+            println!("{:?}", parsed);
             println!("------------------");
         }
 
-        ast
+        Ok(ast?)
     }
 
-    fn parse_expr(pairs: Pairs<Rule>) -> Result<ast::Node, String> {
-        PRATT_PARSER
-            .map_primary(|primary| match primary.as_rule() {
-                Rule::program | Rule::expr => Self::parse_expr(primary.into_inner()),
-                Rule::list => {
-                    let list = primary
-                        .into_inner()
-                        .map(|i| Self::parse_expr(i.into_inner()))
-                        .collect::<Result<Vec<ast::Node>, String>>()?;
-                    Ok(ast::Node::List(list))
-                }
-                Rule::int => primary
+    fn parse_pair(pair: Pair<'_, Rule>) -> Result<ast::Node, String> {
+        match pair.as_rule() {
+            Rule::program | Rule::statement | Rule::expr => Self::parse_pairs(pair.into_inner()),
+            Rule::statements => Ok(ast::Node::Statements(
+                pair.into_inner()
+                    .map(Self::parse_pair)
+                    .collect::<Result<Vec<ast::Node>, String>>()?,
+            )),
+            Rule::list => Ok(ast::Node::List(
+                pair.into_inner()
+                    .map(Self::parse_pair)
+                    .collect::<Result<Vec<ast::Node>, String>>()?,
+            )),
+            Rule::int => pair
+                .as_str()
+                .parse::<f64>()
+                .map_err(|err| err.to_string())
+                .map(ast::Node::Number),
+            Rule::range => {
+                let mut inner = pair.into_inner();
+                let from = inner
+                    .next()
+                    .unwrap()
                     .as_str()
                     .parse::<f64>()
-                    .map_err(|err| err.to_string())
-                    .map(ast::Node::Number),
-                Rule::range => {
-                    let mut inner = primary.into_inner();
-                    let from = inner
-                        .next()
-                        .unwrap()
-                        .as_str()
-                        .parse::<f64>()
-                        .map_err(|err| err.to_string())?;
-                    let to = inner
-                        .next()
-                        .unwrap()
-                        .as_str()
-                        .parse::<f64>()
-                        .map_err(|err| err.to_string())?;
-                    Ok(ast::Node::Range(from, to))
-                }
-                Rule::varref => Ok(ast::Node::VarRef(primary.as_str().to_string())),
-                Rule::looop => {
-                    let mut inner = primary.into_inner();
-                    let name = inner.next().unwrap().as_str().to_string();
-                    let range = Self::parse_expr(inner.next().unwrap().into_inner())?;
-                    let inner = inner
-                        .into_iter()
-                        .map(|node| Self::parse_expr(node.into_inner()))
-                        .collect::<Result<Vec<ast::Node>, String>>()?;
-                    Ok(ast::Node::Loop {
-                        var: name,
-                        range: Box::new(range),
-                        inner,
-                    })
-                }
-                _ => {
-                    dbg!(primary);
-                    unreachable!()
-                }
-            })
+                    .map_err(|err| err.to_string())?;
+                let to = inner
+                    .next()
+                    .unwrap()
+                    .as_str()
+                    .parse::<f64>()
+                    .map_err(|err| err.to_string())?;
+                Ok(ast::Node::Range(from, to))
+            }
+            Rule::varref => Ok(ast::Node::VarRef(pair.as_str().to_string())),
+            Rule::looop => {
+                let mut inner = pair.into_inner();
+                let name = inner.next().unwrap().as_str().to_string();
+                let range = Self::parse_pair(inner.next().unwrap())?;
+                let inner = inner
+                    .into_iter()
+                    .map(Self::parse_pair)
+                    .collect::<Result<Vec<ast::Node>, String>>()?;
+                Ok(ast::Node::Loop {
+                    var: name,
+                    range: Box::new(range),
+                    inner,
+                })
+            }
+            Rule::var => {
+                let mut inner = pair.into_inner();
+                let first = inner.next().unwrap();
+                let (def, name) = match first.as_rule() {
+                    Rule::def => (Some(first), inner.next().unwrap()),
+                    Rule::name => (None, first),
+                    _ => unreachable!(),
+                };
+                let name = name.as_str().to_string();
+                let expr = Box::new(Self::parse_pair(inner.next().unwrap())?);
+                let node = match def {
+                    Some(def) => {
+                        let mutable = if def.as_str().contains("mut") {
+                            ast::Mut::Mutable
+                        } else {
+                            ast::Mut::Immutable
+                        };
+                        ast::Node::Define(mutable, name, expr)
+                    }
+                    None => ast::Node::Assign(name, expr),
+                };
+                Ok(node)
+            }
+            _ => {
+                dbg!(pair);
+                unreachable!()
+            }
+        }
+    }
+
+    fn parse_pairs(pairs: Pairs<Rule>) -> Result<ast::Node, String> {
+        PRATT_PARSER
+            .map_primary(|primary| Self::parse_pair(primary))
             .map_prefix(|op, rhs| match op.as_rule() {
                 Rule::neg => Ok(ast::Node::Expr {
                     op: ast::Op::Mul,
@@ -125,25 +148,13 @@ impl AlphaParser {
                     rhs: Box::new(rhs?),
                 }),
                 Rule::name => Ok(ast::Node::Assign(op.as_str().to_string(), Box::new(rhs?))),
-                Rule::def => match rhs {
-                    Ok(ast::Node::Assign(name, expr)) => Ok(ast::Node::Define(
-                        if op.as_str().contains("mut") {
-                            ast::Mut::Mutable
-                        } else {
-                            ast::Mut::Immutable
-                        },
-                        name,
-                        expr,
-                    )),
-                    Err(e) => Err(e),
-                    _ => unreachable!(),
-                },
                 _ => {
                     dbg!(op, rhs?);
                     unreachable!()
                 }
             })
             .map_postfix(|lhs, op| match op.as_rule() {
+                Rule::EOI => lhs,
                 Rule::fac => todo!(),
                 _ => {
                     dbg!(lhs?, op);
