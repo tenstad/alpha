@@ -103,15 +103,24 @@ impl AlphaParser {
                 let mut inner = pair.into_inner();
                 let name = inner.next().unwrap().as_str().to_string();
                 let range = Self::parse_pair(inner.next().unwrap())?;
-                let inner = inner
-                    .into_iter()
-                    .map(Self::parse_pair)
-                    .collect::<Result<Vec<ast::Node>, String>>()?;
+                let inner = Self::parse_pair(inner.next().unwrap())?;
                 Ok(ast::Node::Loop {
                     var: name,
                     range: Box::new(range),
-                    inner,
+                    inner: Box::new(inner),
                 })
+            }
+            Rule::fundef => {
+                let mut inner = pair.into_inner();
+                let name = inner.next().unwrap().as_str().to_string();
+                let names = inner
+                    .next()
+                    .unwrap()
+                    .into_inner()
+                    .map(|n| n.as_str().to_string())
+                    .collect::<Vec<String>>();
+                let inner = Self::parse_pair(inner.next().unwrap())?;
+                Ok(ast::Node::FunDef(name, names, Box::new(inner)))
             }
             Rule::var => {
                 let mut inner = pair.into_inner();

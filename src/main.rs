@@ -22,7 +22,7 @@ fn main() {
     let program = fs::read_to_string(args.file).unwrap();
 
     match AlphaParser::parse_source(program.as_str()) {
-        Ok(ast) => Eval::default().run(&ast, 0),
+        Ok(ast) => Eval::default().run(&ast),
         Err(e) => println!("{}", e),
     }
 }

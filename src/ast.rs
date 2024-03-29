@@ -7,11 +7,12 @@ pub enum Node {
     Loop {
         var: String,
         range: Box<Node>,
-        inner: Vec<Node>,
+        inner: Box<Node>,
     },
     IfElse(Box<Node>, Box<Node>, Box<Node>),
     Statements(Vec<Node>),
     Fun(String, Vec<Node>),
+    FunDef(String, Vec<String>, Box<Node>),
     List(Vec<Node>),
     Expr {
         op: Op,
