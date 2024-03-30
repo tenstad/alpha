@@ -82,13 +82,10 @@ impl Eval {
                     fn_scope,
                 );
 
-                match name {
-                    Some(name) => {
-                        scope.vars.insert(name.clone(), def.clone());
-                        ast::Node::Nada
-                    },
-                    None => def
+                if let Some(name) = name {
+                    scope.vars.insert(name.clone(), def.clone());
                 }
+                def
             }
             ast::Node::ScopedFunDef(_, _, _, _) => node.clone(),
             ast::Node::IfElse(cond, iif, eelse) => match self.eval(cond, scope, depth) {

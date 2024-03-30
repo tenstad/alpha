@@ -12,3 +12,10 @@ fn powtwo(n) {
 }
 
 print(powtwo(10));
+
+
+fn do(f, n) {
+    f(n);
+}
+
+print(do(fn rec(n) { if n > 0 { 1 + rec(n-1); } else { 0; } }, 10));
