@@ -14,8 +14,8 @@ pub enum Node {
     IfElse(Box<Node>, Box<Node>, Box<Node>),
     Statements(Vec<Node>),
     Fun(String, Vec<Node>),
-    FunDef(String, Vec<String>, Box<Node>),
-    ScopedFunDef(String, Vec<String>, Box<Node>, eval::Scope),
+    FunDef(Option<String>, Vec<String>, Box<Node>),
+    ScopedFunDef(Option<String>, Vec<String>, Box<Node>, eval::Scope),
     List(Vec<Node>),
     Expr {
         op: Op,

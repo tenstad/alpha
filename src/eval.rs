@@ -81,8 +81,14 @@ impl Eval {
                     inner.clone(),
                     fn_scope,
                 );
-                scope.vars.insert(name.clone(), def.clone());
-                def
+
+                match name {
+                    Some(name) => {
+                        scope.vars.insert(name.clone(), def.clone());
+                        ast::Node::Nada
+                    },
+                    None => def
+                }
             }
             ast::Node::ScopedFunDef(_, _, _, _) => node.clone(),
             ast::Node::IfElse(cond, iif, eelse) => match self.eval(cond, scope, depth) {
@@ -171,7 +177,9 @@ impl Eval {
                             }
                             _ => panic!("Not a  fn: '{}'", name),
                         };
-                        fn_scope.vars.insert(defname.clone(), fndef.clone());
+                        if let Some(defname) = defname {
+                            fn_scope.vars.insert(defname.clone(), fndef.clone());
+                        }
                         for (name, arg) in zip(names, args) {
                             fn_scope.vars.insert(name.clone(), arg);
                         }

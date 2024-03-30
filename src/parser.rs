@@ -112,10 +112,12 @@ impl AlphaParser {
             }
             Rule::fundef => {
                 let mut inner = pair.into_inner();
-                let name = inner.next().unwrap().as_str().to_string();
-                let names = inner
-                    .next()
-                    .unwrap()
+                let first = inner.next().unwrap();
+                let (name, next) = match first.as_rule() {
+                    Rule::name => (Some(first.as_str().to_string()), inner.next().unwrap()),
+                    _ => (None, first)
+                };
+                let names = next
                     .into_inner()
                     .map(|n| n.as_str().to_string())
                     .collect::<Vec<String>>();

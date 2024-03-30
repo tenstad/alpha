@@ -2,13 +2,12 @@ fn repeatpowtwo(f, n) {
     if n <= 0 {
         f;
     } else {
-        repeatpowtwo(fn x(a) { f(f(a)); }, n-1);
+        repeatpowtwo(fn (a) { f(f(a)); }, n-1);
     }
 }
 
 fn powtwo(n) {
-    fn addone(x) { x + 1; }
-    let f = repeatpowtwo(addone, n);
+    let f = repeatpowtwo(fn (x) { x + 1; }, n);
     f(0);
 }
 

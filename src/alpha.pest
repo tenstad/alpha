@@ -6,7 +6,7 @@ program           =   { SOI ~ statements ~ EOI }
       looop       =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
       iif         =   { "if" ~ expr ~ "{" ~ statements ~ "}" ~ eelse? }
       eelse       =   { "else" ~ "{" ~ statements ~ "}" }
-      fundef      =   { "fn" ~ name ~ "(" ~ names? ~ ")" ~ "{" ~ statements ~ "}" }
+      fundef      =   { "fn" ~ name? ~ "(" ~ names? ~ ")" ~ "{" ~ statements ~ "}" }
       names       =   { name ~ ("," ~ name)* }
     semistatement =  _{ (var | expr) ~ ";" }
       var         =   { def? ~ name ~ "=" ~ (statement | expr) }
