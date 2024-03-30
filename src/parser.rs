@@ -90,13 +90,18 @@ impl AlphaParser {
                     .as_str()
                     .parse::<f64>()
                     .map_err(|err| err.to_string())?;
+                let inclusive = match inner.next().unwrap().as_rule() {
+                    Rule::inclusive => true,
+                    Rule::exclusive => false,
+                    _ => panic!()
+                };
                 let to = inner
                     .next()
                     .unwrap()
                     .as_str()
                     .parse::<f64>()
                     .map_err(|err| err.to_string())?;
-                Ok(ast::Node::Range(from, to))
+                Ok(ast::Node::Range(from, inclusive, to))
             }
             Rule::varref => Ok(ast::Node::VarRef(pair.as_str().to_string())),
             Rule::looop => {

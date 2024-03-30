@@ -1,37 +1,40 @@
-WHITESPACE   =  _{ " " | "\t" | NEWLINE }
-  
-program           =   { SOI ~ statements ~ EOI }
-  statements      =   { (statement | semistatement)* }
-    statement     =   { looop | iif | fundef }
-      looop       =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
-      iif         =   { "if" ~ expr ~ "{" ~ statements ~ "}" ~ eelse? }
-      eelse       =   { "else" ~ "{" ~ statements ~ "}" }
-      fundef      =   { "fn" ~ name? ~ "(" ~ names? ~ ")" ~ "{" ~ statements ~ "}" }
-      names       =   { name ~ ("," ~ name)* }
-    semistatement =  _{ (var | expr) ~ ";" }
-      var         =   { def? ~ name ~ "=" ~ (statement | expr) }
-        def       =   { "let" ~ "mut"? }
-        name      =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }
-      expr        =   { prefix? ~ primary ~ postfix? ~ (infix ~ prefix? ~ primary ~ postfix? )* }
-        infix     =  _{ ge | gt | le | lt | eq | neq | add | sub | mul | div | pow }
-          eq      =   { "==" }
-          neq     =   { "!=" }
-          gt      =   { ">" }
-          ge      =   { ">=" }
-          lt      =   { "<" }
-          le      =   { "<=" }
-          add     =   { "+" }
-          sub     =   { "-" }
-          mul     =   { "*" }
-          div     =   { "/" }
-          pow     =   { "^" }
-        prefix    =  _{ neg }
-          neg     =   { "-" }
-        postfix   =  _{ fac }
-          fac     =   { "$" }
-        primary   =  _{ "(" ~ expr ~ ")" | fun | varref | list | range | int }
-          fun     =   { name ~ "(" ~ (statement | expr) ~ ("," ~ (statement | expr))* ~ ")" }
-          list    =   { "[" ~ expr ~ ("," ~ expr )* ~ "]" }
-          range   =   { int ~ ".." ~ int }
-          int     =  @{ (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT+ | ASCII_DIGIT) }
-          varref  =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }
+WHITESPACE               =  _{ " " | "\t" | NEWLINE }
+
+program                  =   { SOI ~ statements ~ EOI }
+  statements             =   { (statement | semistatement)* }
+    statement            =   { looop | iif | fundef }
+      looop              =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
+      iif                =   { "if" ~ expr ~ "{" ~ statements ~ "}" ~ eelse? }
+      eelse              =   { "else" ~ "{" ~ statements ~ "}" }
+      fundef             =   { "fn" ~ name? ~ "(" ~ names? ~ ")" ~ "{" ~ statements ~ "}" }
+      names              =   { name ~ ("," ~ name)* }
+    semistatement        =  _{ (var | expr) ~ ";" }
+      var                =   { def? ~ name ~ "=" ~ (statement | expr) }
+        def              =   { "let" ~ "mut"? }
+        name             =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }
+      expr               =   { prefix? ~ primary ~ postfix? ~ (infix ~ prefix? ~ primary ~ postfix? )* }
+        infix            =  _{ ge | gt | le | lt | eq | neq | add | sub | mul | div | pow }
+          eq             =   { "==" }
+          neq            =   { "!=" }
+          gt             =   { ">" }
+          ge             =   { ">=" }
+          lt             =   { "<" }
+          le             =   { "<=" }
+          add            =   { "+" }
+          sub            =   { "-" }
+          mul            =   { "*" }
+          div            =   { "/" }
+          pow            =   { "^" }
+        prefix           =  _{ neg }
+          neg            =   { "-" }
+        postfix          =  _{ fac }
+          fac            =   { "$" }
+        primary          =  _{ "(" ~ expr ~ ")" | fun | varref | list | range | int }
+          fun            =   { name ~ "(" ~ (statement | expr) ~ ("," ~ (statement | expr))* ~ ")" }
+          list           =   { "[" ~ expr ~ ("," ~ expr )* ~ "]" }
+          range          =   { int ~ rdots ~ int }
+            rdots        =  _{ inclusive | exclusive }
+              inclusive  =   { "..=" }
+              exclusive  =   { "..<" | ".." }
+          int            =  @{ (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT+ | ASCII_DIGIT) }
+          varref         =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }

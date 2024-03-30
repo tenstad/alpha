@@ -59,9 +59,10 @@ impl Eval {
             ast::Node::Loop { var, range, inner } => {
                 let range = self.eval(range, scope, depth);
                 match range {
-                    ast::Node::Range(from, to) => {
+                    ast::Node::Range(from, inclusive, to) => {
                         let mut result = ast::Node::Nada;
-                        for i in from as i64..to as i64 {
+                        let extra = if inclusive { 1 } else { 0 };
+                        for i in from as i64..to as i64 + extra {
                             scope.vars.insert(var.clone(), ast::Node::Number(i as f64));
                             result = self.eval(inner, scope, depth + 1);
                         }
@@ -188,7 +189,7 @@ impl Eval {
                 .get(name)
                 .expect(format!("Variable '{}' not known", name).as_str())
                 .clone(),
-            ast::Node::Range(a, b) => ast::Node::Range(*a, *b),
+            ast::Node::Range(a, inclusive, b) => ast::Node::Range(*a, *inclusive, *b),
             ast::Node::Nada => ast::Node::Nada,
         }
     }

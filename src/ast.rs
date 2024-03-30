@@ -5,7 +5,7 @@ pub enum Node {
     Nada,
     Number(f64),
     Bool(bool),
-    Range(f64, f64),
+    Range(f64, bool, f64),
     Loop {
         var: String,
         range: Box<Node>,
