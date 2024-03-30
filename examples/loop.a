@@ -1,11 +1,8 @@
-let range = 0..10;
-let mut fib = 0;
-let mut next = 1;
-for i in range {
-    print(fib);
-    let prev = fib;
-    fib = next;
-    next = prev + fib;
-}
+print(for i in 0..101 { i; });
 
-print(for i in 0..5 { i; });
+let range = 0..5;
+let a = for i in range {
+    print(i);
+    i;
+};
+print(a);
