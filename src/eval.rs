@@ -2,17 +2,21 @@ use std::{collections::HashMap, iter::zip};
 
 use crate::ast;
 
-#[derive(Default)]
-struct Scope<'a> {
+#[derive(Default, Debug, Clone)]
+pub struct Scope {
     vars: HashMap<String, ast::Node>,
-    parent: Option<&'a Scope<'a>>,
+    parent: HashMap<String, ast::Node>,
 }
 
-impl<'a> Scope<'a> {
+impl Scope {
     fn get(&self, key: &String) -> Option<&ast::Node> {
-        self.vars
-            .get(key)
-            .or_else(|| self.parent.and_then(|p| p.get(key)))
+        self.vars.get(key).or_else(|| self.parent.get(key))
+    }
+
+    fn combined(&self) -> HashMap<String, ast::Node> {
+        let mut combined = self.parent.clone();
+        combined.extend(self.vars.clone().into_iter());
+        combined
     }
 }
 
@@ -66,10 +70,21 @@ impl Eval {
                     _ => panic!(),
                 }
             }
-            ast::Node::FunDef(name, _, _) => {
-                scope.vars.insert(name.clone(), node.clone());
-                node.clone()
+            ast::Node::FunDef(name, params, inner) => {
+                let fn_scope = Scope {
+                    vars: HashMap::new(),
+                    parent: scope.combined(),
+                };
+                let def = ast::Node::ScopedFunDef(
+                    name.clone(),
+                    params.clone(),
+                    inner.clone(),
+                    fn_scope,
+                );
+                scope.vars.insert(name.clone(), def.clone());
+                def
             }
+            ast::Node::ScopedFunDef(_, _, _, _) => node.clone(),
             ast::Node::IfElse(cond, iif, eelse) => match self.eval(cond, scope, depth) {
                 ast::Node::Bool(true) => self.eval(&iif, scope, depth),
                 ast::Node::Bool(false) => self.eval(&eelse, scope, depth),
@@ -150,18 +165,17 @@ impl Eval {
                         let fndef = scope
                             .get(name)
                             .expect(format!("Undefined fn: '{}'", name).as_str());
-                        let (names, inner) = match fndef {
-                            ast::Node::FunDef(_, names, inner) => (names, inner),
+                        let (defname, names, inner, mut fn_scope) = match fndef {
+                            ast::Node::ScopedFunDef(defname, names, inner, scope) => {
+                                (defname, names, inner, scope.clone())
+                            }
                             _ => panic!("Not a  fn: '{}'", name),
                         };
-                        let mut inner_scope = Scope {
-                            vars: HashMap::new(),
-                            parent: Some(scope),
-                        };
+                        fn_scope.vars.insert(defname.clone(), fndef.clone());
                         for (name, arg) in zip(names, args) {
-                            inner_scope.vars.insert(name.clone(), arg);
+                            fn_scope.vars.insert(name.clone(), arg);
                         }
-                        self.eval(inner, &mut inner_scope, depth + 1)
+                        self.eval(inner, &mut fn_scope, depth + 1)
                     }
                 }
             }

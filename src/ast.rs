@@ -1,3 +1,5 @@
+use crate::eval;
+
 #[derive(Debug, Clone)]
 pub enum Node {
     Nada,
@@ -13,6 +15,7 @@ pub enum Node {
     Statements(Vec<Node>),
     Fun(String, Vec<Node>),
     FunDef(String, Vec<String>, Box<Node>),
+    ScopedFunDef(String, Vec<String>, Box<Node>, eval::Scope),
     List(Vec<Node>),
     Expr {
         op: Op,
