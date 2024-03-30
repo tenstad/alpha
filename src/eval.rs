@@ -10,7 +10,9 @@ struct Scope<'a> {
 
 impl<'a> Scope<'a> {
     fn get(&self, key: &String) -> Option<&ast::Node> {
-        self.vars.get(key).or_else(|| self.parent.and_then(|p| p.get(key)))
+        self.vars
+            .get(key)
+            .or_else(|| self.parent.and_then(|p| p.get(key)))
     }
 }
 
@@ -56,9 +58,7 @@ impl Eval {
                     ast::Node::Range(from, to) => {
                         let mut result = ast::Node::Nada;
                         for i in from as i64..to as i64 {
-                            scope
-                                .vars
-                                .insert(var.clone(), ast::Node::Number(i as f64));
+                            scope.vars.insert(var.clone(), ast::Node::Number(i as f64));
                             result = self.eval(inner, scope, depth + 1);
                         }
                         result
@@ -67,10 +67,7 @@ impl Eval {
                 }
             }
             ast::Node::FunDef(name, _, _) => {
-                scope.vars.insert(
-                    name.clone(),
-                    node.clone(),
-                );
+                scope.vars.insert(name.clone(), node.clone());
                 node.clone()
             }
             ast::Node::IfElse(cond, iif, eelse) => match self.eval(cond, scope, depth) {
@@ -130,7 +127,7 @@ impl Eval {
                             })
                             .collect(),
                     ),
-                    _ => panic!()
+                    _ => panic!(),
                 }
             }
             ast::Node::Fun(name, args) => {

@@ -5,5 +5,10 @@ fn fib(n) {
         fib(n-1) + fib(n-2);
     }
 }
-
 print(fib(9));
+
+let addone = fn x(n) { n + 1; };
+let y = x;
+print(x(1));
+print(y(1));
+print(addone(1));

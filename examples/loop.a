@@ -7,3 +7,5 @@ for i in range {
     fib = next;
     next = prev + fib;
 }
+
+print(for i in 0..5 { i; });
