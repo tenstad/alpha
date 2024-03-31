@@ -32,9 +32,8 @@ program                  =   { SOI ~ statements ~ EOI }
         primary          =  _{ "(" ~ expr ~ ")" | fun | varref | list | range | int }
           fun            =   { name ~ "(" ~ (statement | expr) ~ ("," ~ (statement | expr))* ~ ")" }
           list           =   { "[" ~ expr ~ ("," ~ expr )* ~ "]" }
-          range          =   { int ~ rdots ~ int }
-            rdots        =  _{ inclusive | exclusive }
-              inclusive  =   { "..=" }
-              exclusive  =   { "..<" | ".." }
+          range          =   { rstart ~ int ~ ".." ~ int ~ rend }
+            rstart       =   { "[" | "(" }
+            rend         =   { "]" | ")" }
           int            =  @{ (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT+ | ASCII_DIGIT) }
           varref         =  @{ ASCII_ALPHA_LOWER ~ (ASCII_ALPHA | "_")* }

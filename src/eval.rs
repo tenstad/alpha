@@ -59,10 +59,11 @@ impl Eval {
             ast::Node::Loop { var, range, inner } => {
                 let range = self.eval(range, scope, depth);
                 match range {
-                    ast::Node::Range(from, inclusive, to) => {
+                    ast::Node::Range(start, from, to, end) => {
                         let mut result = ast::Node::Nada;
-                        let extra = if inclusive { 1 } else { 0 };
-                        for i in from as i64..to as i64 + extra {
+                        let start = if start { 0 } else { 1 };
+                        let end = if end { 1 } else { 0 };
+                        for i in from as i64 + start..to as i64 + end {
                             scope.vars.insert(var.clone(), ast::Node::Number(i as f64));
                             result = self.eval(inner, scope, depth + 1);
                         }
@@ -76,12 +77,8 @@ impl Eval {
                     vars: HashMap::new(),
                     parent: scope.combined(),
                 };
-                let def = ast::Node::ScopedFunDef(
-                    name.clone(),
-                    params.clone(),
-                    inner.clone(),
-                    fn_scope,
-                );
+                let def =
+                    ast::Node::ScopedFunDef(name.clone(), params.clone(), inner.clone(), fn_scope);
 
                 if let Some(name) = name {
                     scope.vars.insert(name.clone(), def.clone());
@@ -189,7 +186,7 @@ impl Eval {
                 .get(name)
                 .expect(format!("Variable '{}' not known", name).as_str())
                 .clone(),
-            ast::Node::Range(a, inclusive, b) => ast::Node::Range(*a, *inclusive, *b),
+            ast::Node::Range(_, _, _, _) => node.clone(),
             ast::Node::Nada => ast::Node::Nada,
         }
     }

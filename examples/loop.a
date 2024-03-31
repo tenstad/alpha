@@ -1,12 +1,13 @@
-let range = 0..101;
+let range = [0..101);
 let mut a = for i in range { i; };
 print(a);
 
-print(for i in 0..2 { i; });
-print(for i in 0..<2 { i; });
-print(for i in 0..=2 { i; });
+for i in [0..2] { print(0, i); }
+for i in [0..2) { print(1, i); }
+for i in (0..2] { print(2, i); }
+for i in (0..2) { print(3, i); }
 
-a = for i in 0..=5 {
+a = for i in (0..5] {
     print(i);
     i;
 };

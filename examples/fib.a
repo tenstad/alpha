@@ -9,7 +9,7 @@ print(fib(9));
 
 let mut fib = 0;
 let mut next = 1;
-for i in 0..9 {
+for i in [0..9) {
     let prev = fib;
     fib = next;
     next = prev + fib;

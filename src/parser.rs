@@ -84,24 +84,29 @@ impl AlphaParser {
                 .map(ast::Node::Number),
             Rule::range => {
                 let mut inner = pair.into_inner();
-                let from = inner
+                let start = match inner.next().unwrap().as_str() {
+                    "[" => true,
+                    "(" => false,
+                    _ => unreachable!(),
+                };
+                let from: f64 = inner
                     .next()
                     .unwrap()
                     .as_str()
                     .parse::<f64>()
                     .map_err(|err| err.to_string())?;
-                let inclusive = match inner.next().unwrap().as_rule() {
-                    Rule::inclusive => true,
-                    Rule::exclusive => false,
-                    _ => panic!()
-                };
                 let to = inner
                     .next()
                     .unwrap()
                     .as_str()
                     .parse::<f64>()
                     .map_err(|err| err.to_string())?;
-                Ok(ast::Node::Range(from, inclusive, to))
+                let end = match inner.next().unwrap().as_str() {
+                    "]" => true,
+                    ")" => false,
+                    _ => unreachable!(),
+                };
+                Ok(ast::Node::Range(start, from, to, end))
             }
             Rule::varref => Ok(ast::Node::VarRef(pair.as_str().to_string())),
             Rule::looop => {
@@ -120,7 +125,7 @@ impl AlphaParser {
                 let first = inner.next().unwrap();
                 let (name, next) = match first.as_rule() {
                     Rule::name => (Some(first.as_str().to_string()), inner.next().unwrap()),
-                    _ => (None, first)
+                    _ => (None, first),
                 };
                 let names = next
                     .into_inner()
