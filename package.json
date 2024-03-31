@@ -1,0 +1,25 @@
+{
+  "name": "alpha",
+  "displayName": "alpha",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "alpha",
+      "aliases": ["alpha"],
+      "extensions": [".a"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "alpha",
+      "scopeName": "source.alpha",
+      "path": "./alpha.tmLanguage.json"
+    }]
+  }
+}

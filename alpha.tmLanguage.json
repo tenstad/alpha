@@ -1,0 +1,149 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Alpha",
+  "scopeName": "source.alpha",
+  "patterns": [
+    { "include": "#keywords" },
+    { "include": "#functions" },
+    { "include": "#variables" },
+    { "include": "#strings" },
+    { "include": "#constants" }
+  ],
+  "repository": {
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.numeric.alpha",
+          "match": "[[:digit:]]+"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "comment": "function definition",
+          "name": "meta.function.definition.alpha",
+          "begin": "\\b(fn)\\s+([A-Za-z0-9_]*)(\\()",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.other.fn.alpha"
+            },
+            "2": {
+              "name": "entity.name.function.alpha"
+            },
+            "3": {
+              "name": "punctuation.brackets.round.alpha"
+            }
+          },
+          "end": "\\{",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.brackets.curly.alpha"
+            }
+          },
+          "patterns": [
+            { "include": "#keywords" },
+            { "include": "#functions" },
+            { "include": "#variables" },
+            { "include": "#strings" },
+            { "include": "#constants" }
+          ]
+        },
+        {
+          "comment": "function/method calls",
+          "name": "meta.function.call.alpha",
+          "begin": "([a-z]+)(\\()",
+          "beginCaptures": {
+            "1": {
+              "name": "entity.name.function.alpha"
+            },
+            "2": {
+              "name": "punctuation.brackets.round.alpha"
+            }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.brackets.round.alpha"
+            }
+          },
+          "patterns": [
+            { "include": "#keywords" },
+            { "include": "#functions" },
+            { "include": "#variables" },
+            { "include": "#strings" },
+            { "include": "#constants" }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "comment": "control flow keywords",
+          "name": "keyword.control.alpha",
+          "match": "\\b(else|for|if|in)\\b"
+        },
+        {
+          "comment": "storage keywords",
+          "name": "keyword.other.alpha storage.type.alpha",
+          "match": "\\b(let)\\b"
+        },
+        {
+          "comment": "mut",
+          "name": "storage.modifier.mut.alpha",
+          "match": "\\b(mut)\\b"
+        },
+        {
+          "comment": "other keywords",
+          "name": "keyword.other.alpha",
+          "match": "\\b(in)\\b"
+        },
+        {
+          "comment": "fn",
+          "name": "keyword.other.fn.alpha",
+          "match": "\\b(fn)\\b"
+        },
+        {
+          "comment": "single equal",
+          "name": "keyword.operator.assignment.equal.alpha",
+          "match": "(?<![<>])=(?!=|>)"
+        },
+        {
+          "comment": "comparison operators",
+          "name": "keyword.operator.comparison.alpha",
+          "match": "(=(=)?(?!>)|!=|<=|(?<!=)>=)"
+        },
+        {
+          "comment": "ranges",
+          "name": "keyword.operator.range.alpha",
+          "match": "\\b(\\[|\\()([0-9]+)\\.{2}([0-9]+)(\\]|\\))\\b"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "comment": "variables",
+          "name": "variable.other.alpha",
+          "match": "\\b[a-z]+\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.alpha",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.alpha",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
