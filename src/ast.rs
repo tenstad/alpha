@@ -22,9 +22,9 @@ pub enum Node {
         else_block: Box<Node>,
     },
     Statements(Vec<Node>),
-    Fun(String, Vec<Node>),
-    FunDef(Option<String>, Vec<String>, Box<Node>),
-    ScopedFunDef(Option<String>, Vec<String>, Box<Node>, eval::Scope),
+    FnCall(String, Vec<Node>),
+    FnDef(Option<String>, Vec<String>, Box<Node>),
+    ScopedFnDef(Option<String>, Vec<String>, Box<Node>, eval::Scope),
     List(Vec<Node>),
     Expr {
         op: Op,

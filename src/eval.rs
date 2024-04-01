@@ -87,20 +87,20 @@ impl Eval {
                     _ => panic!(),
                 }
             }
-            ast::Node::FunDef(name, params, inner) => {
+            ast::Node::FnDef(name, params, inner) => {
                 let fn_scope = Scope {
                     vars: HashMap::new(),
                     parent: scope.combined(),
                 };
                 let def =
-                    ast::Node::ScopedFunDef(name.clone(), params.clone(), inner.clone(), fn_scope);
+                    ast::Node::ScopedFnDef(name.clone(), params.clone(), inner.clone(), fn_scope);
 
                 if let Some(name) = name {
                     scope.vars.insert(name.clone(), def.clone());
                 }
                 def
             }
-            ast::Node::ScopedFunDef(_, _, _, _) => node.clone(),
+            ast::Node::ScopedFnDef(_, _, _, _) => node.clone(),
             ast::Node::IfElse {
                 condition,
                 if_block,
@@ -165,7 +165,7 @@ impl Eval {
                     _ => panic!(),
                 }
             }
-            ast::Node::Fun(name, args) => {
+            ast::Node::FnCall(name, args) => {
                 let args = args
                     .iter()
                     .map(|arg| self.eval(arg, scope, depth))
@@ -186,7 +186,7 @@ impl Eval {
                             .get(name)
                             .expect(format!("Undefined fn: '{}'", name).as_str());
                         let (defname, names, inner, mut fn_scope) = match fndef {
-                            ast::Node::ScopedFunDef(defname, names, inner, scope) => {
+                            ast::Node::ScopedFnDef(defname, names, inner, scope) => {
                                 (defname, names, inner, scope.clone())
                             }
                             _ => panic!("Not a  fn: '{}'", name),

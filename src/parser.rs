@@ -137,7 +137,7 @@ impl AlphaParser {
                     .map(|n| n.as_str().to_string())
                     .collect::<Vec<String>>();
                 let inner = Self::parse_pair(inner.next().unwrap())?;
-                Ok(ast::Node::FunDef(name, names, Box::new(inner)))
+                Ok(ast::Node::FnDef(name, names, Box::new(inner)))
             }
             Rule::var => {
                 let mut inner = pair.into_inner();
@@ -169,7 +169,7 @@ impl AlphaParser {
                     .into_iter()
                     .map(Self::parse_pair)
                     .collect::<Result<Vec<ast::Node>, String>>()?;
-                Ok(ast::Node::Fun(name, args))
+                Ok(ast::Node::FnCall(name, args))
             }
             Rule::iif => {
                 let mut inner = pair.into_inner();
