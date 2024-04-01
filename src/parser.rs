@@ -173,17 +173,17 @@ impl AlphaParser {
             }
             Rule::iif => {
                 let mut inner = pair.into_inner();
-                let cond = Self::parse_pair(inner.next().unwrap())?;
-                let iif = Self::parse_pair(inner.next().unwrap())?;
-                let eelse = inner
+                let condition = Self::parse_pair(inner.next().unwrap())?;
+                let if_block = Self::parse_pair(inner.next().unwrap())?;
+                let else_block = inner
                     .next()
                     .map(|pair| Self::parse_pair(pair.into_inner().next().unwrap()))
                     .unwrap_or(Ok(ast::Node::Nada))?;
-                Ok(ast::Node::IfElse(
-                    Box::new(cond),
-                    Box::new(iif),
-                    Box::new(eelse),
-                ))
+                Ok(ast::Node::IfElse {
+                    condition: Box::new(condition),
+                    if_block: Box::new(if_block),
+                    else_block: Box::new(else_block),
+                })
             }
             _ => {
                 dbg!(pair);

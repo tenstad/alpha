@@ -16,7 +16,11 @@ pub enum Node {
         iterable: Box<Node>,
         inner: Box<Node>,
     },
-    IfElse(Box<Node>, Box<Node>, Box<Node>),
+    IfElse {
+        condition: Box<Node>,
+        if_block: Box<Node>,
+        else_block: Box<Node>,
+    },
     Statements(Vec<Node>),
     Fun(String, Vec<Node>),
     FunDef(Option<String>, Vec<String>, Box<Node>),

@@ -101,9 +101,13 @@ impl Eval {
                 def
             }
             ast::Node::ScopedFunDef(_, _, _, _) => node.clone(),
-            ast::Node::IfElse(cond, iif, eelse) => match self.eval(cond, scope, depth) {
-                ast::Node::Bool(true) => self.eval(&iif, scope, depth),
-                ast::Node::Bool(false) => self.eval(&eelse, scope, depth),
+            ast::Node::IfElse {
+                condition,
+                if_block,
+                else_block,
+            } => match self.eval(condition, scope, depth) {
+                ast::Node::Bool(true) => self.eval(if_block, scope, depth),
+                ast::Node::Bool(false) => self.eval(else_block, scope, depth),
                 _ => panic!("not a bool"),
             },
             ast::Node::Expr { op, lhs, rhs } => {
