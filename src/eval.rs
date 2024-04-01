@@ -56,9 +56,13 @@ impl Eval {
                     .map(|n| self.eval(n, scope, depth))
                     .collect::<Vec<ast::Node>>(),
             ),
-            ast::Node::Loop { var, range, inner } => {
-                let range = self.eval(range, scope, depth);
-                match range {
+            ast::Node::Loop {
+                var,
+                iterable,
+                inner,
+            } => {
+                let iterable = self.eval(iterable, scope, depth);
+                match iterable {
                     ast::Node::Range {
                         mut from,
                         mut to,

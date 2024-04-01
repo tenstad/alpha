@@ -13,7 +13,7 @@ pub enum Node {
     },
     Loop {
         var: String,
-        range: Box<Node>,
+        iterable: Box<Node>,
         inner: Box<Node>,
     },
     IfElse(Box<Node>, Box<Node>, Box<Node>),

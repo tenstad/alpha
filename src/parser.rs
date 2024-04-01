@@ -117,11 +117,11 @@ impl AlphaParser {
             Rule::looop => {
                 let mut inner = pair.into_inner();
                 let name = inner.next().unwrap().as_str().to_string();
-                let range = Self::parse_pair(inner.next().unwrap())?;
+                let iterable = Self::parse_pair(inner.next().unwrap())?;
                 let inner = Self::parse_pair(inner.next().unwrap())?;
                 Ok(ast::Node::Loop {
                     var: name,
-                    range: Box::new(range),
+                    iterable: Box::new(iterable),
                     inner: Box::new(inner),
                 })
             }
