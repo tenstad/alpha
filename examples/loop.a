@@ -6,6 +6,7 @@ for i in [0..2] { print(0, i); }
 for i in [0..2) { print(1, i); }
 for i in (0..2] { print(2, i); }
 for i in (0..2) { print(3, i); }
+for i in [9, 8] { print(4, i); }
 
 a = for i in (0..5] {
     print(i);

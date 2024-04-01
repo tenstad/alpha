@@ -84,6 +84,14 @@ impl Eval {
                         }
                         result
                     }
+                    ast::Node::List(list) => {
+                        let mut result = ast::Node::Nada;
+                        for i in list {
+                            scope.vars.insert(var.clone(), i);
+                            result = self.eval(inner, scope, depth + 1);
+                        }
+                        result
+                    }
                     node => panic!("Not an iterable: '{:?}'", node),
                 }
             }
