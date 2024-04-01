@@ -84,7 +84,7 @@ impl Eval {
                         }
                         result
                     }
-                    _ => panic!(),
+                    node => panic!("Not an iterable: '{:?}'", node),
                 }
             }
             ast::Node::FnDef(name, params, inner) => {
@@ -108,7 +108,7 @@ impl Eval {
             } => match self.eval(condition, scope, depth) {
                 ast::Node::Bool(true) => self.eval(if_block, scope, depth),
                 ast::Node::Bool(false) => self.eval(else_block, scope, depth),
-                _ => panic!("not a bool"),
+                node => panic!("Not a bool: '{:?}'", node),
             },
             ast::Node::Expr { op, lhs, rhs } => {
                 let lhs = self.eval(lhs, scope, depth);
@@ -184,12 +184,12 @@ impl Eval {
                     _ => {
                         let fndef = scope
                             .get(name)
-                            .expect(format!("Undefined fn: '{}'", name).as_str());
+                            .expect(format!("Undefined function: '{}'", name).as_str());
                         let (defname, names, inner, mut fn_scope) = match fndef {
                             ast::Node::ScopedFnDef(defname, names, inner, scope) => {
                                 (defname, names, inner, scope.clone())
                             }
-                            _ => panic!("Not a  fn: '{}'", name),
+                            _ => panic!("Not a function: '{}'", name),
                         };
                         if let Some(defname) = defname {
                             fn_scope.vars.insert(defname.clone(), fndef.clone());
@@ -203,7 +203,7 @@ impl Eval {
             }
             ast::Node::VarRef(name) => scope
                 .get(name)
-                .expect(format!("Variable '{}' not known", name).as_str())
+                .expect(format!("Undefined variable: '{}'", name).as_str())
                 .clone(),
             ast::Node::Range { .. } => node.clone(),
             ast::Node::Nada => ast::Node::Nada,
