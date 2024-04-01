@@ -5,7 +5,12 @@ pub enum Node {
     Nada,
     Number(f64),
     Bool(bool),
-    Range(bool, f64, f64, bool),
+    Range {
+        from: f64,
+        to: f64,
+        lower: Bound,
+        upper: Bound,
+    },
     Loop {
         var: String,
         range: Box<Node>,
@@ -25,6 +30,12 @@ pub enum Node {
     Define(Mut, String, Box<Node>),
     Assign(String, Box<Node>),
     VarRef(String),
+}
+
+#[derive(Debug, Clone)]
+pub enum Bound {
+    Inclusive,
+    Exclusive,
 }
 
 #[derive(Debug, Clone)]
