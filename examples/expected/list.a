@@ -1,0 +1,3 @@
+List([Number(1.0), List([Number(2.0), Number(3.0)]), Number(4.0)])
+List([Number(4.0), List([Number(6.0)])])
+List([Number(-2.0), List([Number(-4.0)])])
