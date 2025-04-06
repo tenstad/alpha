@@ -45,20 +45,26 @@ impl AlphaParser {
         }
     }
 
-    pub fn parse_source(source: &str) -> Result<ast::Node, String> {
-        println!("----- Source -----\n{}\n------------------", source);
+    pub fn parse_source(source: &str, debug: bool) -> Result<ast::Node, String> {
+        if debug {
+            println!("----- Source -----\n{}\n------------------", source);
+        }
 
         let pairs = AlphaParser::parse(Rule::program, source).map_err(|e| e.to_string())?;
-        println!("----- Pairs ------");
-        AlphaParser::print_pairs(&pairs, 0);
-        println!("------------------");
+        if debug {
+            println!("----- Pairs ------");
+            AlphaParser::print_pairs(&pairs, 0);
+            println!("------------------");
+        }
 
         let ast = Self::parse_pairs(pairs);
 
-        if let Ok(parsed) = &ast {
-            println!("----- Parsed -----");
-            println!("{:?}", parsed);
-            println!("------------------");
+        if debug {
+            if let Ok(parsed) = &ast {
+                println!("----- Parsed -----");
+                println!("{:?}", parsed);
+                println!("------------------");
+            }
         }
 
         Ok(ast?)

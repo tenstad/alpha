@@ -15,13 +15,15 @@ extern crate lazy_static;
 struct Args {
     #[arg(short = 'f', long)]
     file: String,
+    #[arg(short = 'd', long)]
+    debug: bool,
 }
 
 fn main() {
     let args = Args::parse();
     let program = fs::read_to_string(args.file).unwrap();
 
-    match AlphaParser::parse_source(program.as_str()) {
+    match AlphaParser::parse_source(program.as_str(), args.debug) {
         Ok(ast) => Eval::default().run(&ast),
         Err(e) => println!("{}", e),
     }
