@@ -65,21 +65,43 @@ impl Eval {
                 let mut results = Vec::<ast::Node>::new();
                 match iterable {
                     ast::Node::Range {
-                        mut from,
-                        mut to,
+                        from,
+                        to,
                         lower,
                         upper,
                     } => {
-                        from += match lower {
+                        let mut start = match from.as_ref() {
+                            ast::Node::Number(n) => *n,
+                            ast::Node::VarRef(_) => {
+                                match self.eval(from.as_ref(), scope, depth + 1) {
+                                    ast::Node::Number(n) => n,
+                                    _ => panic!("Not a number: '{:?}'", node),
+                                }
+                            }
+                            _ => panic!("unsupported range start"),
+                        };
+
+                        let mut end: f64 = match to.as_ref() {
+                            ast::Node::Number(n) => *n,
+                            ast::Node::VarRef(_) => {
+                                match self.eval(to.as_ref(), scope, depth + 1) {
+                                    ast::Node::Number(n) => n,
+                                    _ => panic!("Not a number: '{:?}'", node),
+                                }
+                            }
+                            _ => panic!("unsupported range start"),
+                        };
+
+                        start += match lower {
                             ast::Bound::Inclusive => 0.0,
                             ast::Bound::Exclusive => 1.0,
                         };
-                        to += match upper {
+                        end += match upper {
                             ast::Bound::Inclusive => 1.0,
                             ast::Bound::Exclusive => 0.0,
                         };
 
-                        for i in from as i64..to as i64 {
+                        for i in start as i64..end as i64 {
                             scope.vars.insert(var.clone(), ast::Node::Number(i as f64));
                             match self.eval(inner, scope, depth + 1) {
                                 ast::Node::Nada => {}

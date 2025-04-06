@@ -95,18 +95,9 @@ impl AlphaParser {
                     "(" => ast::Bound::Exclusive,
                     _ => unreachable!(),
                 };
-                let from: f64 = inner
-                    .next()
-                    .unwrap()
-                    .as_str()
-                    .parse::<f64>()
-                    .map_err(|err| err.to_string())?;
-                let to = inner
-                    .next()
-                    .unwrap()
-                    .as_str()
-                    .parse::<f64>()
-                    .map_err(|err| err.to_string())?;
+                let from = Box::new(Self::number_or_var(inner.next().unwrap().as_str())?);
+                let to = Box::new(Self::number_or_var(inner.next().unwrap().as_str())?);
+
                 let upper = match inner.next().unwrap().as_str() {
                     "]" => ast::Bound::Inclusive,
                     ")" => ast::Bound::Exclusive,
@@ -195,6 +186,17 @@ impl AlphaParser {
                 dbg!(pair);
                 unreachable!()
             }
+        }
+    }
+
+    fn number_or_var(str: &str) -> Result<ast::Node, String> {
+        if str.chars().next().unwrap().is_numeric() {
+            return str
+                .parse::<f64>()
+                .map(|f| ast::Node::Number(f))
+                .map_err(|err| err.to_string());
+        } else {
+            return Ok(ast::Node::VarRef(str.into()));
         }
     }
 

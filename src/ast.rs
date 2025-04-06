@@ -6,8 +6,8 @@ pub enum Node {
     Number(f64),
     Bool(bool),
     Range {
-        from: f64,
-        to: f64,
+        from: Box<Node>,
+        to: Box<Node>,
         lower: Bound,
         upper: Bound,
     },

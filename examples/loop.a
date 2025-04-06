@@ -2,8 +2,10 @@ let range = [0..101);
 let mut a = for i in range { i; };
 print(a);
 
-for i in [0..2] { print(0, i); }
-for i in [0..2) { print(1, i); }
+let end = 2;
+for i in [0..end] { print(0, i); }
+let start = 0;
+for i in [start..2) { print(1, i); }
 for i in (0..2] { print(2, i); }
 for i in (0..2) { print(3, i); }
 for i in [9, 8] { print(4, i); }
@@ -17,3 +19,5 @@ a = for i in (0..5] {
 print(a);
 
 print(for i in [10..12] { i + 2; });
+
+print(for i in [0..3] { for j in [0..i] { [j, i]; } });
