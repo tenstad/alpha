@@ -62,6 +62,7 @@ impl Eval {
                 inner,
             } => {
                 let iterable = self.eval(iterable, scope, depth);
+                let mut results = Vec::<ast::Node>::new();
                 match iterable {
                     ast::Node::Range {
                         mut from,
@@ -69,7 +70,6 @@ impl Eval {
                         lower,
                         upper,
                     } => {
-                        let mut result = ast::Node::Nada;
                         from += match lower {
                             ast::Bound::Inclusive => 0.0,
                             ast::Bound::Exclusive => 1.0,
@@ -78,22 +78,27 @@ impl Eval {
                             ast::Bound::Inclusive => 1.0,
                             ast::Bound::Exclusive => 0.0,
                         };
+
                         for i in from as i64..to as i64 {
                             scope.vars.insert(var.clone(), ast::Node::Number(i as f64));
-                            result = self.eval(inner, scope, depth + 1);
+                            match self.eval(inner, scope, depth + 1) {
+                                ast::Node::Nada => {}
+                                node => results.push(node),
+                            }
                         }
-                        result
                     }
                     ast::Node::List(list) => {
-                        let mut result = ast::Node::Nada;
                         for i in list {
                             scope.vars.insert(var.clone(), i);
-                            result = self.eval(inner, scope, depth + 1);
+                            match self.eval(inner, scope, depth + 1) {
+                                ast::Node::Nada => {}
+                                node => results.push(node),
+                            }
                         }
-                        result
                     }
                     node => panic!("Not an iterable: '{:?}'", node),
                 }
+                ast::Node::List(results)
             }
             ast::Node::FnDef(name, params, inner) => {
                 let fn_scope = Scope {

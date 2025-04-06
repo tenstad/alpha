@@ -10,6 +10,10 @@ for i in [9, 8] { print(4, i); }
 
 a = for i in (0..5] {
     print(i);
-    i;
+    if i >= 2 {
+        2 * i;
+    }
 };
 print(a);
+
+print(for i in [10..12] { i + 2; });
