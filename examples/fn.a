@@ -19,3 +19,15 @@ fn do(f, n) {
 }
 
 print(do(fn rec(n) { if n > 0 { 1 + rec(n-1); } else { 0; } }, 10));
+
+fn foo(a) {
+    let mut x = 0;
+    fn inc(a) {
+        x = x + 1;
+        x;
+    }
+}
+
+let f = foo(0);
+print(f(0));
+print(f(0));
