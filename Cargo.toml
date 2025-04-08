@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
+cranelift-codegen = "0.118.0"
+cranelift-frontend = "0.118.0"
 lazy_static = "1.4.0"
 pest = "2.7.8"
 pest_derive = "2.7.8"
