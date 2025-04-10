@@ -129,12 +129,14 @@ impl AlphaParser {
                     Rule::name => (Some(first.as_str().to_string()), inner.next().unwrap()),
                     _ => (None, first),
                 };
-                let names = next
-                    .into_inner()
-                    .map(|n| n.as_str().to_string())
-                    .collect::<Vec<String>>();
-                let inner = Self::parse_pair(inner.next().unwrap())?;
-                Ok(ast::Node::FnDef(name, names, Box::new(inner)))
+                let (names, inner) = match inner.next() {
+                    Some(inner) => (next
+                        .into_inner()
+                        .map(|n| n.as_str().to_string())
+                        .collect::<Vec<String>>(), inner),
+                    None => (Vec::new(), next)
+                };
+                Ok(ast::Node::FnDef(name, names, Box::new(Self::parse_pair(inner)?)))
             }
             Rule::var => {
                 let mut inner = pair.into_inner();
