@@ -30,7 +30,12 @@ fn main() {
         Ok(ast) => {
             Eval::default().run(&ast);
             let funcs = Translator::translate(&ast);
-            comp::compile(funcs);
+            if args.debug {
+                for f in funcs.iter() {
+                    println!("{}", f.display());
+                }
+            }
+            comp::compile(funcs, args.debug);
         }
         Err(e) => println!("{}", e),
     }

@@ -7,7 +7,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
-pub fn compile(funcs: Vec<Function>) {
+pub fn compile(funcs: Vec<Function>, debug: bool) {
     let settings = settings::builder();
     let shared_flags = settings::Flags::new(settings);
 
@@ -15,6 +15,10 @@ pub fn compile(funcs: Vec<Function>) {
         .unwrap()
         .finish(shared_flags)
         .unwrap();
+
+    if debug {
+        println!("Compiling for {:?}", target_lexicon::Triple::host());
+    }
 
     let builder = ObjectBuilder::new(
         target_isa,

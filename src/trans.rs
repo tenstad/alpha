@@ -67,7 +67,6 @@ impl Translator {
 
         let flags = settings::Flags::new(settings::builder());
         let res = verify_function(&func, &flags);
-        println!("{}", func.display());
         if let Err(errors) = res {
             panic!("{}", errors);
         }
