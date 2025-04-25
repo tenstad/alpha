@@ -2,13 +2,11 @@ use clap::Parser;
 use eval::Eval;
 use parser::AlphaParser;
 use std::fs;
-use trans::Translator;
 
 mod ast;
 mod comp;
 mod eval;
 mod parser;
-mod trans;
 
 #[macro_use]
 extern crate lazy_static;
@@ -29,13 +27,14 @@ fn main() {
     match AlphaParser::parse_source(program.as_str(), args.debug) {
         Ok(ast) => {
             Eval::default().run(&ast);
-            let funcs = Translator::translate(&ast);
-            if args.debug {
-                for f in funcs.iter() {
-                    println!("{}", f.display());
-                }
+
+            let start = ast::Node::FnDef(Some("main".into()), Vec::new(), Box::new(ast));
+            let mut compiler = comp::Compiler::new(args.debug);
+            compiler.declare_functions(&start);
+            if let ast::Node::FnDef(_, _, node) = start {
+                compiler.translate_fn(&Some("main".into()), &Vec::new(), &node, args.debug);
             }
-            comp::compile(funcs, args.debug);
+            compiler.compile(args.debug);
         }
         Err(e) => println!("{}", e),
     }
