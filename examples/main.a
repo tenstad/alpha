@@ -6,4 +6,11 @@ fn fib(n) {
     }
 }
 
-fib(8);
+let result = fib(8);
+
+let i = 64;
+while i < 100 {
+    i = i + 1;
+}
+
+result + i;

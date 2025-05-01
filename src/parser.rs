@@ -122,6 +122,15 @@ impl AlphaParser {
                     inner: Box::new(inner),
                 })
             }
+            Rule::whiile => {
+                let mut inner = pair.into_inner();
+                let cond = Self::parse_pair(inner.next().unwrap())?;
+                let inner = Self::parse_pair(inner.next().unwrap())?;
+                Ok(ast::Node::While {
+                    condition: Box::new(cond),
+                    inner: Box::new(inner),
+                })
+            }
             Rule::fundef => {
                 let mut inner = pair.into_inner();
                 let first = inner.next().unwrap();
@@ -130,13 +139,19 @@ impl AlphaParser {
                     _ => (None, first),
                 };
                 let (names, inner) = match inner.next() {
-                    Some(inner) => (next
-                        .into_inner()
-                        .map(|n| n.as_str().to_string())
-                        .collect::<Vec<String>>(), inner),
-                    None => (Vec::new(), next)
+                    Some(inner) => (
+                        next.into_inner()
+                            .map(|n| n.as_str().to_string())
+                            .collect::<Vec<String>>(),
+                        inner,
+                    ),
+                    None => (Vec::new(), next),
                 };
-                Ok(ast::Node::FnDef(name, names, Box::new(Self::parse_pair(inner)?)))
+                Ok(ast::Node::FnDef(
+                    name,
+                    names,
+                    Box::new(Self::parse_pair(inner)?),
+                ))
             }
             Rule::var => {
                 let mut inner = pair.into_inner();

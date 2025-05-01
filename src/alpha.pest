@@ -2,8 +2,9 @@ WHITESPACE               =  _{ " " | "\t" | NEWLINE }
 
 program                  =   { SOI ~ statements ~ EOI }
   statements             =   { (statement | semistatement)* }
-    statement            =   { looop | iif | fundef }
+    statement            =   { looop | whiile | iif | fundef }
       looop              =   { "for" ~ name ~ "in" ~ expr ~ "{" ~ statements ~ "}" }
+      whiile             =   { "while" ~ expr ~ "{" ~ statements ~ "}" }
       iif                =   { "if" ~ expr ~ "{" ~ statements ~ "}" ~ eelse? }
       eelse              =   { "else" ~ "{" ~ statements ~ "}" }
       fundef             =   { "fn" ~ name? ~ "(" ~ names? ~ ")" ~ "{" ~ statements ~ "}" }

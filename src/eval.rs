@@ -56,6 +56,22 @@ impl Eval {
                     .map(|n| self.eval(n, scope, depth))
                     .collect::<Vec<ast::Node>>(),
             ),
+            ast::Node::While { condition, inner } => {
+                let mut result = ast::Node::Nada;
+                loop {
+                    let cond = self.eval(condition, scope, depth);
+                    match cond {
+                        ast::Node::Bool(b) => {
+                            if !b {
+                                break;
+                            }
+                        }
+                        _ => panic!("condition is not a bool"),
+                    };
+                    result = self.eval(&inner, scope, depth);
+                }
+                result
+            }
             ast::Node::Loop {
                 var,
                 iterable,

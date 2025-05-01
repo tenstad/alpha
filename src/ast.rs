@@ -16,6 +16,10 @@ pub enum Node {
         iterable: Box<Node>,
         inner: Box<Node>,
     },
+    While {
+        condition: Box<Node>,
+        inner: Box<Node>,
+    },
     IfElse {
         condition: Box<Node>,
         if_block: Box<Node>,

@@ -89,6 +89,18 @@ impl Compiler {
             ast::Node::VarRef(_name) => {}
             ast::Node::Number(_num) => {}
             ast::Node::Nada => {}
+            ast::Node::Loop {
+                var,
+                iterable,
+                inner,
+            } => {
+                self.declare_functions(iterable);
+                self.declare_functions(inner);
+            }
+            ast::Node::While { condition, inner } => {
+                self.declare_functions(condition);
+                self.declare_functions(inner);
+            }
             ast::Node::FnDef(name, params, body) => {
                 self.declare_functions(body);
 
@@ -206,7 +218,6 @@ impl Compiler {
                 let if_block = fnbuilder.builder.create_block();
                 let else_block = fnbuilder.builder.create_block();
                 let return_block = fnbuilder.builder.create_block();
-
                 fnbuilder.builder.append_block_param(return_block, I64);
 
                 fnbuilder
@@ -223,6 +234,43 @@ impl Compiler {
                 fnbuilder.builder.seal_block(else_block);
                 let else_return = self.translate_wbuilder(fnbuilder, &else_body, debug);
                 fnbuilder.builder.ins().jump(return_block, &[else_return]);
+
+                fnbuilder.builder.switch_to_block(return_block);
+                fnbuilder.builder.seal_block(return_block);
+                fnbuilder.builder.block_params(return_block)[0]
+            }
+            ast::Node::While { condition, inner } => {
+                let condition_block = fnbuilder.builder.create_block();
+                fnbuilder.builder.append_block_param(condition_block, I64);
+
+                let inner_block = fnbuilder.builder.create_block();
+
+                let return_block = fnbuilder.builder.create_block();
+                fnbuilder.builder.append_block_param(return_block, I64);
+
+                let zero = self.translate_wbuilder(fnbuilder, &ast::Node::Nada, debug);
+                fnbuilder.builder.ins().jump(condition_block, &[zero]);
+
+                fnbuilder.builder.switch_to_block(condition_block);
+                let condition_value = self.translate_wbuilder(fnbuilder, &condition, debug);
+                let return_value = fnbuilder.builder.block_params(condition_block)[0];
+                fnbuilder.builder.ins().brif(
+                    condition_value,
+                    inner_block,
+                    &[],
+                    return_block,
+                    &[return_value],
+                );
+
+                fnbuilder.builder.switch_to_block(inner_block);
+                fnbuilder.builder.seal_block(inner_block);
+                let inner_return = self.translate_wbuilder(fnbuilder, &inner, debug);
+                fnbuilder
+                    .builder
+                    .ins()
+                    .jump(condition_block, &[inner_return]);
+
+                fnbuilder.builder.seal_block(condition_block);
 
                 fnbuilder.builder.switch_to_block(return_block);
                 fnbuilder.builder.seal_block(return_block);
@@ -265,12 +313,10 @@ impl Compiler {
                             .ins()
                             .icmp(IntCC::SignedGreaterThanOrEqual, lhs, rhs)
                     }
-                    ast::Op::Lt => {
-                        fnbuilder
-                            .builder
-                            .ins()
-                            .icmp(IntCC::SignedLessThanOrEqual, lhs, rhs)
-                    }
+                    ast::Op::Lt => fnbuilder
+                        .builder
+                        .ins()
+                        .icmp(IntCC::SignedLessThan, lhs, rhs),
                     ast::Op::Le => {
                         fnbuilder
                             .builder
