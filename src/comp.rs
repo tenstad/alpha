@@ -6,12 +6,13 @@ use std::process::Command;
 
 use cranelift_codegen::entity::EntityRef;
 use cranelift_codegen::ir::condcodes::IntCC;
+use cranelift_codegen::ir::types::I32;
 use cranelift_codegen::ir::{types::I64, Value};
 use cranelift_codegen::ir::{AbiParam, Function, InstBuilder, Signature, UserFuncName};
 use cranelift_codegen::verifier::verify_function;
 use cranelift_codegen::{isa, settings, Context};
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext, Variable};
-use cranelift_module::{FuncId, Linkage, Module};
+use cranelift_module::{DataDescription, FuncId, Linkage, Module};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 
 use crate::ast::{self, Node};
@@ -49,13 +50,34 @@ impl Compiler {
         )
         .unwrap();
 
-        let module = ObjectModule::new(builder);
+        let mut module = ObjectModule::new(builder);
         let ctx = module.make_context();
+
+        let printf_sig = {
+            let mut sig = module.make_signature();
+            sig.params.push(AbiParam::new(module.isa().pointer_type()));
+            sig.params.push(AbiParam::new(module.isa().pointer_type()));
+            sig.returns.push(AbiParam::new(I64));
+            sig.call_conv = module.isa().default_call_conv();
+            sig
+        };
+        let printf_func = module
+            .declare_function("printf", Linkage::Import, &printf_sig)
+            .unwrap();
+
+        let mut fn_decls: HashMap<String, Fn> = HashMap::new();
+        fn_decls.insert(
+            "printf".into(),
+            Fn {
+                id: printf_func,
+                sig: printf_sig,
+            },
+        );
 
         Self {
             module,
             ctx,
-            fn_decls: HashMap::new(),
+            fn_decls,
         }
     }
 
@@ -164,12 +186,12 @@ impl Compiler {
 
         let flags = settings::Flags::new(settings::builder());
         let res = verify_function(&func, &flags);
-        if let Err(errors) = res {
-            panic!("{}", errors);
-        }
 
         if debug {
             println!("{}", func.display());
+        }
+        if let Err(errors) = res {
+            panic!("{}", errors);
         }
 
         self.ctx.func = func;
@@ -205,7 +227,7 @@ impl Compiler {
                     .map(|arg| self.translate_wbuilder(fnbuilder, arg, debug))
                     .collect();
 
-                let call = fnbuilder.builder.ins().call(fn_ref, &[evaled_args[0]]);
+                let call = fnbuilder.builder.ins().call(fn_ref, &evaled_args);
                 fnbuilder.builder.inst_results(call)[0]
             }
             ast::Node::IfElse {
@@ -325,27 +347,26 @@ impl Compiler {
                     }
                 }
             }
+            ast::Node::String(str) => {
+                let mut data = DataDescription::new();
+                data.define(str.as_bytes().to_vec().into_boxed_slice());
+                let id = self.module.declare_anonymous_data(false, false).unwrap();
+                self.module.define_data(id, &data).unwrap();
+                let ptr = self
+                    .module
+                    .declare_data_in_func(id, &mut fnbuilder.builder.func);
+                fnbuilder
+                    .builder
+                    .ins()
+                    .symbol_value(self.module.isa().pointer_type(), ptr)
+            }
             ast::Node::Number(num) => fnbuilder.builder.ins().iconst(I64, *num as i64),
             ast::Node::Nada => fnbuilder.builder.ins().iconst(I64, 0),
             n => todo!("{:?}", n),
         }
     }
 
-    pub fn compile(self, debug: bool) {
-        // let mut printf_sig = module.make_signature();
-        // printf_sig.params.push(AbiParam::new(I64));
-        // printf_sig.returns.push(AbiParam::new(I32));
-        // let printf_func = module
-        //     .declare_function("printf", Linkage::Import, &printf_sig)
-        //     .unwrap();
-
-        // let data_id = module
-        //     .declare_data("fmt", Linkage::Local, false, false)
-        //     .unwrap();
-        // let mut data_ctx = DataDescription::new();
-        // data_ctx.define(b"%d\n\0".to_vec().into_boxed_slice());
-        // module.define_data(data_id, &data_ctx).unwrap();
-
+    pub fn compile(mut self, debug: bool) {
         let obj = self.module.finish();
         let bytes = obj.emit().unwrap();
         if !Path::new("build").exists() {

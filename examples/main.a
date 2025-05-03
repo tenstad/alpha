@@ -1,16 +1,12 @@
 fn fib(n) {
-    if n <= 1 {
+    let result = if n <= 1 {
         n;
     } else {
         fib(n-1) + fib(n-2);
-    }
+    };
+    printf("fib(%d) = \0", n);
+    printf("%d\n\0", result);
+    result;
 }
 
-let result = fib(8);
-
-let i = 64;
-while i < 100 {
-    i = i + 1;
-}
-
-result + i;
+fib(8);

@@ -88,6 +88,13 @@ impl AlphaParser {
                 .parse::<f64>()
                 .map_err(|err| err.to_string())
                 .map(ast::Node::Number),
+            Rule::string => Ok(ast::Node::String(
+                pair.as_str()
+                    .to_string()
+                    .trim_matches('"')
+                    .replace("\\0", "\0")
+                    .replace("\\n", "\n"),
+            )),
             Rule::range => {
                 let mut inner = pair.into_inner();
                 let lower = match inner.next().unwrap().as_str() {

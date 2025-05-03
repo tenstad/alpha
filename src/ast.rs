@@ -5,6 +5,7 @@ pub enum Node {
     Nada,
     Number(f64),
     Bool(bool),
+    String(String),
     Range {
         from: Box<Node>,
         to: Box<Node>,

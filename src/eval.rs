@@ -51,6 +51,7 @@ impl Eval {
             }
             ast::Node::Bool(b) => ast::Node::Bool(*b),
             ast::Node::Number(n) => ast::Node::Number(*n),
+            ast::Node::String(s) => ast::Node::String(s.clone()),
             ast::Node::List(list) => ast::Node::List(
                 list.iter()
                     .map(|n| self.eval(n, scope, depth))
@@ -222,7 +223,7 @@ impl Eval {
                     .map(|arg| self.eval(arg, scope, depth))
                     .collect::<Vec<ast::Node>>();
                 match name.as_str() {
-                    "print" => {
+                    "printf" => {
                         println!(
                             "{}",
                             args.iter()
