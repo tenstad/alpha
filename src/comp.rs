@@ -6,7 +6,6 @@ use std::process::Command;
 
 use cranelift_codegen::entity::EntityRef;
 use cranelift_codegen::ir::condcodes::IntCC;
-use cranelift_codegen::ir::types::I32;
 use cranelift_codegen::ir::{types::I64, Value};
 use cranelift_codegen::ir::{AbiParam, Function, InstBuilder, Signature, UserFuncName};
 use cranelift_codegen::verifier::verify_function;
@@ -112,7 +111,7 @@ impl Compiler {
             ast::Node::Number(_num) => {}
             ast::Node::Nada => {}
             ast::Node::Loop {
-                var,
+                var: _,
                 iterable,
                 inner,
             } => {
@@ -366,7 +365,7 @@ impl Compiler {
         }
     }
 
-    pub fn compile(mut self, debug: bool) {
+    pub fn compile(self) {
         let obj = self.module.finish();
         let bytes = obj.emit().unwrap();
         if !Path::new("build").exists() {
