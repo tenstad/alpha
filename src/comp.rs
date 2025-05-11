@@ -54,8 +54,9 @@ impl Compiler {
 
         let printf_sig = {
             let mut sig = module.make_signature();
-            sig.params.push(AbiParam::new(module.isa().pointer_type()));
-            sig.params.push(AbiParam::new(module.isa().pointer_type()));
+            for _ in 0..10 {
+                sig.params.push(AbiParam::new(module.isa().pointer_type()));
+            }
             sig.returns.push(AbiParam::new(I64));
             sig.call_conv = module.isa().default_call_conv();
             sig
@@ -221,10 +222,21 @@ impl Compiler {
                 let fn_ref = self
                     .module
                     .declare_func_in_func(fu.id, &mut fnbuilder.builder.func);
-                let evaled_args: Vec<Value> = args
+                let mut evaled_args: Vec<Value> = args
                     .iter()
                     .map(|arg| self.translate_wbuilder(fnbuilder, arg, debug))
                     .collect();
+
+                if name == "printf" {
+                    if evaled_args.len() > 10 {
+                        panic!("prinft takes max 10 args");
+                    }
+                    evaled_args.append(
+                        &mut (evaled_args.len()..10)
+                            .map(|_| fnbuilder.builder.ins().iconst(I64, 0))
+                            .collect::<Vec<Value>>(),
+                    );
+                }
 
                 let call = fnbuilder.builder.ins().call(fn_ref, &evaled_args);
                 fnbuilder.builder.inst_results(call)[0]
