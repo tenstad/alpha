@@ -4,9 +4,10 @@ fn fib(n) {
     } else {
         fib(n-1) + fib(n-2);
     };
-    printf("fib(%d) = \0", n);
-    printf("%d\n\0", result);
+    printf("fib(%d) = ", n);
+    printf("%d\n", result);
     result;
 }
 
+printf("hello world\n", 0);
 fib(8);

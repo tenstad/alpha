@@ -92,8 +92,9 @@ impl AlphaParser {
                 pair.as_str()
                     .to_string()
                     .trim_matches('"')
+                    .replace("\\n", "\n")
                     .replace("\\0", "\0")
-                    .replace("\\n", "\n"),
+                    + "\0",
             )),
             Rule::range => {
                 let mut inner = pair.into_inner();
