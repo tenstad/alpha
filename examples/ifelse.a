@@ -14,7 +14,7 @@ let a = if 2 > 1 {
     }
 };
 
-print(a);
-print(if 2 > 1 { 1; } else { 0; });
-print(if 2 == 1 { 1; });
-print(if 2 == 1 { });
+printf("%d\n", a);
+printf("%d\n", if 2 > 1 { 1; } else { 0; });
+printf("%d\n", if 2 == 1 { 1; });
+printf("%d\n", if 2 == 1 { });

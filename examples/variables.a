@@ -3,4 +3,4 @@ let mut bar = 2;
 let baz = bar;
 bar = 3;
 
-print(foo, bar, baz);
+printf("%d %d %d\n", foo, bar, baz);
