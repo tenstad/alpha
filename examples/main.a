@@ -9,4 +9,3 @@ fn fib(n) {
 }
 
 fib(8);
-printf("hello world\n");
