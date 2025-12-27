@@ -28,7 +28,7 @@ pub enum Node {
     },
     Statements(Vec<Node>),
     FnCall(String, Vec<Node>),
-    FnDef(Option<String>, Vec<String>, Box<Node>),
+    FnDef(Option<String>, Vec<String>, Box<Node>, Option<String>),
     ScopedFnDef(Option<String>, Vec<String>, Box<Node>, eval::Scope),
     List(Vec<Node>),
     Expr {
@@ -36,7 +36,8 @@ pub enum Node {
         lhs: Box<Node>,
         rhs: Box<Node>,
     },
-    Define(Mut, String, Box<Node>),
+    Define(Mut, String, Box<Node>, Option<String>),
+    TypeName(String),
     Assign(String, Box<Node>),
     VarRef(String),
 }

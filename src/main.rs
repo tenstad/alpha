@@ -33,10 +33,10 @@ fn main() {
             if args.interpret {
                 Eval::default().run(&ast);
             } else {
-                let start = ast::Node::FnDef(Some("main".into()), Vec::new(), Box::new(ast));
+                let start = ast::Node::FnDef(Some("main".into()), Vec::new(), Box::new(ast), None);
                 let mut compiler = comp::Compiler::new(args.debug);
                 compiler.declare_functions(&start);
-                if let ast::Node::FnDef(_, _, node) = start {
+                if let ast::Node::FnDef(_, _, node, _) = start {
                     compiler.translate_fn(&Some("main".into()), &Vec::new(), &node, args.debug);
                 }
                 compiler.compile();

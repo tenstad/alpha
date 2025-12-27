@@ -97,7 +97,7 @@ impl Compiler {
                 self.declare_functions(&if_body);
                 self.declare_functions(&else_body);
             }
-            ast::Node::Define(_mut, _name, expr) => {
+            ast::Node::Define(_mut, _name, expr, _typename) => {
                 self.declare_functions(&expr);
             }
             ast::Node::Assign(_name, expr) => {
@@ -111,6 +111,7 @@ impl Compiler {
             ast::Node::VarRef(_name) => {}
             ast::Node::Number(_num) => {}
             ast::Node::Nada => {}
+            ast::Node::TypeName(_name) => {}
             ast::Node::Loop {
                 var: _,
                 iterable,
@@ -123,7 +124,7 @@ impl Compiler {
                 self.declare_functions(condition);
                 self.declare_functions(inner);
             }
-            ast::Node::FnDef(name, params, body) => {
+            ast::Node::FnDef(name, params, body, _typename) => {
                 self.declare_functions(body);
 
                 let mut sig = self.module.make_signature();
@@ -215,7 +216,9 @@ impl Compiler {
                 }
                 val
             }
-            ast::Node::FnDef(name, params, body) => self.translate_fn(name, params, body, debug),
+            ast::Node::FnDef(name, params, body, _typename) => {
+                self.translate_fn(name, params, body, debug)
+            }
             ast::Node::FnCall(name, args) => {
                 let fu = self.fn_decls.get(name).unwrap();
 
@@ -309,7 +312,7 @@ impl Compiler {
                 fnbuilder.builder.seal_block(return_block);
                 fnbuilder.builder.block_params(return_block)[0]
             }
-            ast::Node::Define(_mut, name, expr) => {
+            ast::Node::Define(_mut, name, expr, _typename) => {
                 let var = fnbuilder.new_var(name);
                 fnbuilder.builder.declare_var(var, I64);
                 let val = self.translate_wbuilder(fnbuilder, expr, debug);
@@ -372,6 +375,7 @@ impl Compiler {
                     .symbol_value(self.module.isa().pointer_type(), ptr)
             }
             ast::Node::Number(num) => fnbuilder.builder.ins().iconst(I64, *num as i64),
+            ast::Node::TypeName(_name) => fnbuilder.builder.ins().iconst(I64, 0),
             ast::Node::Nada => fnbuilder.builder.ins().iconst(I64, 0),
             n => todo!("{:?}", n),
         }

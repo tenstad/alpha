@@ -39,7 +39,7 @@ impl Eval {
                 }
                 result
             }
-            ast::Node::Define(_mutable, name, expr) => {
+            ast::Node::Define(_mutable, name, expr, _typename) => {
                 let val = self.eval(expr, scope, depth);
                 scope.vars.insert(name.clone(), val);
                 ast::Node::Nada
@@ -139,7 +139,7 @@ impl Eval {
                 }
                 ast::Node::List(results)
             }
-            ast::Node::FnDef(name, params, inner) => {
+            ast::Node::FnDef(name, params, inner, _typename) => {
                 let fn_scope = Scope {
                     vars: HashMap::new(),
                     parent: scope.combined(),
@@ -153,6 +153,7 @@ impl Eval {
                 def
             }
             ast::Node::ScopedFnDef(_, _, _, _) => node.clone(),
+            ast::Node::TypeName(_) => node.clone(),
             ast::Node::IfElse {
                 condition,
                 if_block,

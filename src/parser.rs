@@ -146,19 +146,27 @@ impl AlphaParser {
                     Rule::name => (Some(first.as_str().to_string()), inner.next().unwrap()),
                     _ => (None, first),
                 };
-                let (names, inner) = match inner.next() {
-                    Some(inner) => (
+                let (names, next) = match next.as_rule() {
+                    Rule::names => (
                         next.into_inner()
                             .map(|n| n.as_str().to_string())
                             .collect::<Vec<String>>(),
-                        inner,
+                        inner.next().unwrap(),
                     ),
-                    None => (Vec::new(), next),
+                    _ => (Vec::new(), next),
+                };
+                let (typename, next) = match next.as_rule() {
+                    Rule::typeannot => (
+                        Some(next.into_inner().as_str().to_string()),
+                        inner.next().unwrap(),
+                    ),
+                    _ => (None, next),
                 };
                 Ok(ast::Node::FnDef(
                     name,
                     names,
-                    Box::new(Self::parse_pair(inner)?),
+                    Box::new(Self::parse_pair(next)?),
+                    typename,
                 ))
             }
             Rule::var => {
@@ -169,8 +177,16 @@ impl AlphaParser {
                     Rule::name => (None, first),
                     _ => unreachable!(),
                 };
+                let next = inner.next().unwrap();
                 let name = name.as_str().to_string();
-                let expr = Box::new(Self::parse_pair(inner.next().unwrap())?);
+                let (typename, next) = match next.as_rule() {
+                    Rule::typeannot => (
+                        Some(next.into_inner().as_str().to_string()),
+                        inner.next().unwrap(),
+                    ),
+                    _ => (None, next),
+                };
+                let expr = Box::new(Self::parse_pair(next)?);
                 let node = match def {
                     Some(def) => {
                         let mutable = if def.as_str().contains("mut") {
@@ -178,7 +194,7 @@ impl AlphaParser {
                         } else {
                             ast::Mut::Immutable
                         };
-                        ast::Node::Define(mutable, name, expr)
+                        ast::Node::Define(mutable, name, expr, typename)
                     }
                     None => ast::Node::Assign(name, expr),
                 };
@@ -206,6 +222,10 @@ impl AlphaParser {
                     if_block: Box::new(if_block),
                     else_block: Box::new(else_block),
                 })
+            }
+            Rule::typeannot => {
+                let inner = pair.into_inner();
+                Ok(ast::Node::TypeName(inner.as_str().to_string()))
             }
             _ => {
                 dbg!(pair);
